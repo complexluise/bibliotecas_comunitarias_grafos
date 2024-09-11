@@ -1,0 +1,5 @@
+langchain==0.2.15
+langchain_community==0.2.15
+langchain_openai==0.1.23
+neo4j==5.24.0
+scikit-learn==1.5.1
