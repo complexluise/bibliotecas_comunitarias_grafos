@@ -1,4 +1,4 @@
-class Neo4jQueryManager:
+class Neo4JQueryManager:
 
     @staticmethod
     def create_biblioteca_comunitaria() -> str:
@@ -123,4 +123,44 @@ class Neo4jQueryManager:
         MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
         MERGE (tf:TipoFinanciacion {nombre: $nombre_tipo})
         CREATE (b)-[:FINANCIADA_POR]->(tf)
+        """
+
+    @staticmethod
+    def infraestructura_tecnologica():
+        return """MATCH (b:BibliotecaComunitaria)
+        OPTIONAL MATCH (b)-[r1:TIENE_TECNOLOGIA]->(t1:TipoTecnologia)
+        OPTIONAL MATCH (b)-[r2:USA_TECNOLOGIA]->(t2:Tecnologia) 
+        RETURN 
+            b.id AS BibliotecaID, 
+            b.nombre AS BibliotecaNombre, 
+            CASE WHEN t1.nombre = "computadores" THEN true ELSE false END AS tieneComputador,
+            t2.conectividad AS tieneConectividad
+        """
+
+    @staticmethod
+    def diversidad_colecciones():
+        return """
+        MATCH (b:BibliotecaComunitaria)-[:TIENE_COLECCION]->(c:Coleccion)
+        RETURN b.id AS BibliotecaID, collect(DISTINCT c.tipo) AS tipos_coleccion
+        """
+
+    @staticmethod
+    def cantidad_material_bibliografico():
+        return """
+        MATCH (b:BibliotecaComunitaria)
+        RETURN b.id AS BibliotecaID, b.cantidad_inventario AS cantidad_inventario
+        """
+
+    @staticmethod
+    def diversidad_servicios():
+        return """
+        MATCH (b:BibliotecaComunitaria)-[:OFRECE_SERVICIO]->(s:Servicio)
+        RETURN b.id AS BibliotecaID, collect(DISTINCT s.tipo) AS servicios
+        """
+
+    @staticmethod
+    def tipos_coleccion():
+        return """
+        MATCH (b:BibliotecaComunitaria)-[:TIENE_COLECCION]->(c:Coleccion)
+        RETURN b.id AS BibliotecaID, collect(DISTINCT c.tipo) AS tipos_coleccion
         """
