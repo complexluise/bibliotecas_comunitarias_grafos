@@ -110,10 +110,97 @@ class AnalysisManager:
         results.to_csv(output_path, index=False)
 
 
-# Existing Coordinate Implementations (InfraestructuraTecnologicaCoordinate, etc.)
-# ... (Assuming they are already defined as per your initial code)
+class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
+    def __init__(self, driver):
+        self.driver = driver
+        self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
+        self.name = "Infraestructura tecnológica"
+        self.description = "Disponibilidad de internet y computador en la biblioteca"
 
-# Below are the new coordinate classes you need to add:
+    def get_data(self) -> pd.DataFrame:
+        with self.driver.session() as session:
+            result = session.run(Neo4JQueryManager.infraestructura_tecnologica())
+            return pd.DataFrame(result.data())
+
+    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+        data = self.get_data()
+        data = data[data["BibliotecaID"].isin(bibliotecas)]
+        data["infraestructura_tecnologica"] = data.apply(
+            lambda row: 2 if row["tieneComputador"] and row["tieneConectividad"] else
+            (1 if row["tieneComputador"] or row["tieneConectividad"] else 0), axis=1)
+        return data
+
+
+class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
+    def __init__(self, driver):
+        self.driver = driver
+        self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
+        self.name = "Estado de la digitalización del catálogo"
+        self.description = "Nivel de desarrollo en la digitalización del catálogo bibliográfico"
+
+    def get_data(self) -> pd.DataFrame:
+        return self.df_encuestas[['BibliotecaID', 'tipo_catalogo']]
+
+    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+        data = self.get_data()
+        data = data[data["BibliotecaID"].isin(bibliotecas)]
+
+        # Mapping for catalog types to scores
+        catalog_scores = {
+            'No tiene catálogo': 0,
+            'Catálogo analógico': 1,
+            'Catálogo en hoja de cálculo': 2,
+            'Software Bibliográfico': 3
+        }
+
+        data['Puntaje'] = data['tipo_catalogo'].map(catalog_scores)
+        return data
+
+
+class PorcentajeColeccionCatalogoCoordinate(AnalysisCoordinate):
+    def __init__(self, driver):
+        self.driver = driver
+        self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
+        self.name = "% Colección ingresada al catalogo"
+        self.description = "Porcentaje de la colección bibliográfica que ha sido catalogada aproximadamente"
+
+    def get_data(self) -> pd.DataFrame:
+        return self.df_encuestas[['BibliotecaID', 'porcentaje_coleccion_catalogada']]
+
+    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+        data = self.get_data()
+        data = data[data["BibliotecaID"].isin(bibliotecas)]
+
+        # Score is directly the percentage (0-100)
+        data['Puntaje'] = data['porcentaje_coleccion_catalogada']
+
+        return data
+
+
+class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
+    def __init__(self, driver):
+        self.driver = driver
+        self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
+        self.name = "Nivel de información capturada en el catálogo"
+        self.description = "Detalle de la información capturada en el catálogo"
+
+    def get_data(self) -> pd.DataFrame:
+        return self.df_encuestas[['BibliotecaID', 'nivel_detalle_catalogo']]
+
+    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+        data = self.get_data()
+        data = data[data["BibliotecaID"].isin(bibliotecas)]
+
+        # Mapping for information detail levels to scores
+        detail_scores = {
+            'Sin información': 0,
+            'Descripción del material': 1,
+            'Sistemas de Clasificación': 2,
+            'Estado de disponibilidad de los materiales': 3
+        }
+
+        data['Puntaje'] = data['nivel_detalle_catalogo'].map(detail_scores)
+        return data
 
 # Nivel de avance en la sistematización de servicios bibliotecarios
 class SistemasClasificacionCoordinate(AnalysisCoordinate):
