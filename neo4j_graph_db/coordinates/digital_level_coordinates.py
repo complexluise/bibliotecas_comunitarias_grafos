@@ -1,4 +1,9 @@
-from neo4j_graph_db.coordinates.base import AnalysisCoordinate, AnalysisCategory
+from neo4j_graph_db.coordinates.base import AnalysisCoordinate
+from neo4j_graph_db.constants import AnalysisCategory
+from neo4j_graph_db.utils import Neo4JQueryManager
+
+from pandas import DataFrame
+
 
 # Nivel de avance en la digitalización del catálogo
 class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
@@ -7,12 +12,12 @@ class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
                          description="Disponibilidad de internet y computador en la biblioteca")
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> DataFrame:
         with self.driver.session() as session:
             result = session.run(Neo4JQueryManager.infraestructura_tecnologica())
-            return pd.DataFrame(result.data())
+            return DataFrame(result.data())
 
-    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+    def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         data["Puntaje"] = data.apply(
@@ -20,16 +25,17 @@ class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
             (1 if row["tieneComputador"] or row["tieneConectividad"] else 0), axis=1)
         return data
 
+
 class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
     def __init__(self, driver, df_encuestas):
         super().__init__(driver, df_encuestas, name="Estado de la digitalización del catálogo",
                          description="Nivel de desarrollo en la digitalización del catálogo bibliográfico")
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> DataFrame:
         return self.df_encuestas[['BibliotecaID', 'tipo_catalogo']]
 
-    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+    def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         catalog_scores = {
@@ -48,10 +54,10 @@ class PorcentajeColeccionCatalogoCoordinate(AnalysisCoordinate):
                          description="Porcentaje de la colección bibliográfica que ha sido catalogada aproximadamente")
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> DataFrame:
         return self.df_encuestas[['BibliotecaID', 'porcentaje_coleccion_catalogada']]
 
-    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+    def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         data['Puntaje'] = data['porcentaje_coleccion_catalogada']
@@ -64,10 +70,10 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
                          description="Detalle de la información capturada en el catálogo")
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> DataFrame:
         return self.df_encuestas[['BibliotecaID', 'nivel_detalle_catalogo']]
 
-    def calculate_score(self, bibliotecas: List[str]) -> pd.DataFrame:
+    def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         detail_scores = {
