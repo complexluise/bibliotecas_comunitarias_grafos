@@ -151,7 +151,7 @@ def cargar_datos_en_neo4j(uri, user, password, data):
 
 
 def main():
-    csv_file_path = 'Contacto Bibliotecas - Mapeo Bibliotecas.csv'  # Reemplaza con la ruta de tu archivo CSV
+    csv_file_path = 'data/Contacto Bibliotecas - Mapeo Bibliotecas.csv'  # Reemplaza con la ruta de tu archivo CSV
     neo4j_uri = os.getenv("NEO4J_URI")
     neo4j_user = os.getenv("NEO4J_USER")
     neo4j_password = os.getenv("NEO4J_PASSWORD")
