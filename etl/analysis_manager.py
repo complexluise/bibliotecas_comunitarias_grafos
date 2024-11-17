@@ -78,7 +78,7 @@ class AnalysisManager:
 
 def main():
     db_config = Neo4JConfig()
-    analyzer = AnalysisManager(db_config, "data/Contacto Bibliotecas - Formulario Coordenadas.csv")
+    analyzer = AnalysisManager(db_config, "../data/Contacto Bibliotecas - Formulario Coordenadas.csv")
 
     coordinates_config = {
         # Nivel de avance en la digitalización del catálogo
