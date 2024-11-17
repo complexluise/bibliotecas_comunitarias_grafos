@@ -1,57 +1,9 @@
-import csv
-import logging
 from neo4j import GraphDatabase
-from datetime import datetime
-from utils import Neo4JQueryManager
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('bibliotecas_import.log'),
-        logging.StreamHandler()
-    ]
-)
+from etl.query_manager import Neo4JQueryManager
+from etl.utils import parsear_fecha, a_float, a_bool, a_int, setup_logger, extract_csv
 
-
-def extract_csv(ruta_archivo):
-    logging.info(f"Reading CSV file from: {ruta_archivo}")
-    try:
-        with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
-            lector = csv.DictReader(archivo)
-            data = list(lector)
-            logging.info(f"Successfully read {len(data)} rows from CSV")
-            return data
-    except Exception as e:
-        logging.error(f"Error reading"
-                      f" CSV file: {str(e)}")
-        raise
-
-
-def parsear_fecha(cadena_fecha):
-    try:
-        return datetime.strptime(cadena_fecha, '%d/%m/%Y').strftime('%Y-%m-%d')
-    except ValueError:
-        return None
-
-
-def a_bool(valor):
-    return valor.lower() in ('sí', 'si', 'yes', 'true', '1')
-
-
-def a_float(valor):
-    try:
-        return float(valor)
-    except ValueError:
-        return None
-
-
-def a_int(valor):
-    try:
-        return int(valor)
-    except ValueError:
-        return None
+logger = setup_logger("neo4j_import_db.log")
 
 
 def crear_objetos_neo4j(fila):
@@ -199,55 +151,55 @@ def crear_objetos_neo4j(fila):
 
 
 def cargar_datos_en_neo4j(uri, usuario, contraseña, datos):
-    logging.info("Connecting to Neo4j database...")
+    logger.info("Connecting to Neo4j database...")
     driver = GraphDatabase.driver(uri, auth=(usuario, contraseña))
 
     try:
         with driver.session() as sesion:
             for i, datos_fila in enumerate(datos, 1):
-                logging.info(f"Processing row {i}/{len(datos)} - Biblioteca: {datos_fila['biblioteca']['nombre']}")
+                logger.info(f"Processing row {i}/{len(datos)} - Biblioteca: {datos_fila['biblioteca']['nombre']}")
                 sesion.execute_write(crear_grafo, datos_fila)
 
-        logging.info("All data successfully loaded into Neo4j")
+        logger.info("All data successfully loaded into Neo4j")
     except Exception as e:
-        logging.error(f"Error loading data into Neo4j: {str(e)}")
+        logger.error(f"Error loading data into Neo4j: {str(e)}")
         raise
     finally:
         driver.close()
-        logging.info("Neo4j connection closed")
+        logger.info("Neo4j connection closed")
 
 
 def crear_grafo(tx, datos_biblioteca):
     # Crear nodo BibliotecaComunitaria
     tx.run(
-        Neo4jQueryManager.create_biblioteca_comunitaria(),
+        Neo4JQueryManager.create_biblioteca_comunitaria(),
         props_biblioteca=datos_biblioteca["biblioteca"]
     )
 
     # Crear y vincular nodo Ubicacion
     tx.run(
-        Neo4jQueryManager.create_and_link_ubicacion(),
+        Neo4JQueryManager.create_and_link_ubicacion(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         props_ubicacion=datos_biblioteca["ubicacion"]
     )
 
     # Crear y vincular nodo Localidad
     tx.run(
-        Neo4jQueryManager.create_and_link_localidad(),
+        Neo4JQueryManager.create_and_link_localidad(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         nombre_localidad=datos_biblioteca["localidad"]["nombre"]
     )
 
     # Crear y vincular nodo RedesSociales
     tx.run(
-        Neo4jQueryManager.create_and_link_redes_sociales(),
+        Neo4JQueryManager.create_and_link_redes_sociales(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         props_redes_sociales=datos_biblioteca["redes_sociales"]
     )
 
     # Crear y vincular nodo Coleccion
     tx.run(
-        Neo4jQueryManager.create_and_link_coleccion(),
+        Neo4JQueryManager.create_and_link_coleccion(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         props_coleccion=datos_biblioteca["coleccion"]
     )
@@ -255,21 +207,21 @@ def crear_grafo(tx, datos_biblioteca):
     # Crear y vincular nodos TipoColeccion
     for tc in datos_biblioteca["tipos_coleccion"]:
         tx.run(
-            Neo4jQueryManager.create_and_link_tipo_coleccion(),
+            Neo4JQueryManager.create_and_link_tipo_coleccion(),
             id_biblioteca=datos_biblioteca["biblioteca"]["id"],
             nombre_tipo=tc["nombre"]
         )
 
     # Crear y vincular nodo Catalogo
     tx.run(
-        Neo4jQueryManager.create_and_link_catalogo(),
+        Neo4JQueryManager.create_and_link_catalogo(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         props_catalogo=datos_biblioteca["catalogo"]
     )
 
     # Crear y vincular nodo SoporteCatalogo
     tx.run(
-        Neo4jQueryManager.create_and_link_soporte_catalogo(),
+        Neo4JQueryManager.create_and_link_soporte_catalogo(),
         id_biblioteca=datos_biblioteca["biblioteca"]["id"],
         props_soporte_catalogo=datos_biblioteca["soporte_catalogo"]
     )
@@ -277,7 +229,7 @@ def crear_grafo(tx, datos_biblioteca):
     # Crear y vincular nodos TipoServicio
     for ts in datos_biblioteca["tipos_servicio"]:
         tx.run(
-            Neo4jQueryManager.create_and_link_tipo_servicio(),
+            Neo4JQueryManager.create_and_link_tipo_servicio(),
             id_biblioteca=datos_biblioteca["biblioteca"]["id"],
             nombre_tipo=ts["nombre"]
         )
@@ -285,7 +237,7 @@ def crear_grafo(tx, datos_biblioteca):
     # Crear y vincular nodos TipoActividad
     for ta in datos_biblioteca["tipos_actividad"]:
         tx.run(
-            Neo4jQueryManager.create_and_link_tipo_actividad(),
+            Neo4JQueryManager.create_and_link_tipo_actividad(),
             id_biblioteca=datos_biblioteca["biblioteca"]["id"],
             nombre_tipo=ta["nombre"]
         )
@@ -334,7 +286,7 @@ def crear_grafo(tx, datos_biblioteca):
 def main():
     import os
 
-    logging.info("Starting bibliotecas comunitarias import process")
+    logger.info("Starting bibliotecas comunitarias import process")
 
     csv_file_path = 'data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'
     neo4j_uri = os.getenv("NEO4J_URI")
@@ -342,24 +294,24 @@ def main():
     neo4j_password = os.getenv("NEO4J_PASSWORD")
 
     if not all([neo4j_uri, neo4j_user, neo4j_password]):
-        logging.error("Missing Neo4j environment variables")
+        logger.error("Missing Neo4j environment variables")
         return
 
     try:
-        logging.info("Starting data extraction from CSV")
+        logger.info("Starting data extraction from CSV")
         csv_data = extract_csv(csv_file_path)
 
-        logging.info("Processing CSV data into Neo4j objects")
+        logger.info("Processing CSV data into Neo4j objects")
         neo4j_data = [crear_objetos_neo4j(row) for row in csv_data]
-        logging.info(f"Created {len(neo4j_data)} Neo4j objects")
+        logger.info(f"Created {len(neo4j_data)} Neo4j objects")
 
-        logging.info("Starting Neo4j data import")
+        logger.info("Starting Neo4j data import")
         cargar_datos_en_neo4j(neo4j_uri, neo4j_user, neo4j_password, neo4j_data)
 
-        logging.info("Data import completed successfully!")
+        logger.info("Data import completed successfully!")
 
     except Exception as e:
-        logging.error(f"Error in main process: {str(e)}")
+        logger.error(f"Error in main process: {str(e)}")
         raise
 
 

@@ -1,166 +1,71 @@
-class Neo4JQueryManager:
+import logging
+from csv import DictReader
+from datetime import datetime
 
-    @staticmethod
-    def create_biblioteca_comunitaria() -> str:
-        return """
-        CREATE (b:BibliotecaComunitaria)
-        SET b += $props_biblioteca
-        """
 
-    @staticmethod
-    def create_and_link_ubicacion() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (u:Ubicacion)
-        SET u += $props_ubicacion
-        CREATE (b)-[:UBICADA_EN]->(u)
-        """
+def setup_logger(log_filename: str) -> logging.Logger:
+    """
+    Creates a logger with both file and console handlers
 
-    @staticmethod
-    def create_and_link_localidad() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (l:Localidad {nombre: $nombre_localidad})
-        CREATE (b)-[:PERTENECE_A]->(l)
-        """
+    Args:
+        log_filename: Name of the log file to write to
 
-    @staticmethod
-    def create_and_link_redes_sociales() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (rs:RedesSociales)
-        SET rs += $props_redes_sociales
-        CREATE (b)-[:TIENE_REDES_SOCIALES]->(rs)
-        """
+    Returns:
+        Logger instance configured with file and console handlers
+    """
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
 
-    @staticmethod
-    def create_and_link_coleccion() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (c:Coleccion)
-        SET c += $props_coleccion
-        CREATE (b)-[:TIENE_COLECCION]->(c)
-        """
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-    @staticmethod
-    def create_and_link_tipo_coleccion() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (tc:TipoColeccion {nombre: $nombre_tipo})
-        CREATE (b)-[:TIENE_TIPO_COLECCION]->(tc)
-        """
+    # File handler
+    file_handler = logging.FileHandler(log_filename)
+    file_handler.setFormatter(formatter)
 
-    @staticmethod
-    def create_and_link_catalogo() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (cat:Catalogo)
-        SET cat += $props_catalogo
-        CREATE (b)-[:TIENE_CATALOGO]->(cat)
-        """
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
 
-    @staticmethod
-    def create_and_link_soporte_catalogo() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (sc:SoporteCatalogo)
-        SET sc += $props_soporte_catalogo
-        CREATE (b)-[:USA_SOPORTE_CATALOGO]->(sc)
-        """
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
-    @staticmethod
-    def create_and_link_tipo_servicio() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (ts:TipoServicio {nombre: $nombre_tipo})
-        CREATE (b)-[:OFRECE]->(ts)
-        """
+    return logger
 
-    @staticmethod
-    def create_and_link_tipo_actividad() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (ta:TipoActividad {nombre: $nombre_tipo})
-        CREATE (b)-[:REALIZA]->(ta)
-        """
 
-    @staticmethod
-    def create_and_link_tecnologia() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        CREATE (t:Tecnologia)
-        SET t += $props_tecnologia
-        CREATE (b)-[:USA_TECNOLOGIA]->(t)
-        """
+def extract_csv(ruta_archivo):
+    logging.info(f"Reading CSV file from: {ruta_archivo}")
+    try:
+        with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
+            lector = DictReader(archivo)
+            data = list(lector)
+            logging.info(f"Successfully read {len(data)} rows from CSV")
+            return data
+    except Exception as e:
+        logging.error(f"Error reading"
+                      f" CSV file: {str(e)}")
+        raise
 
-    @staticmethod
-    def create_and_link_tipo_tecnologia() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (tt:TipoTecnologia {nombre: $nombre_tipo})
-        CREATE (b)-[:TIENE_TECNOLOGIA]->(tt)
-        """
 
-    @staticmethod
-    def create_and_link_tipo_poblacion() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (tp:TipoPoblacion {nombre: $nombre_tipo})
-        CREATE (b)-[:ATIENDE]->(tp)
-        """
+def parsear_fecha(cadena_fecha):
+    try:
+        return datetime.strptime(cadena_fecha, '%d/%m/%Y').strftime('%Y-%m-%d')
+    except ValueError:
+        return None
 
-    @staticmethod
-    def create_and_link_tipo_aliado() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (ta:TipoAliado {nombre: $nombre_tipo})
-        CREATE (b)-[:ALIADA_CON]->(ta)
-        """
 
-    @staticmethod
-    def create_and_link_tipo_financiacion() -> str:
-        return """
-        MATCH (b:BibliotecaComunitaria {id: $id_biblioteca})
-        MERGE (tf:TipoFinanciacion {nombre: $nombre_tipo})
-        CREATE (b)-[:FINANCIADA_POR]->(tf)
-        """
+def a_bool(valor):
+    return valor.lower() in ('sí', 'si', 'yes', 'true', '1')
 
-    @staticmethod
-    def infraestructura_tecnologica():
-        return """MATCH (b:BibliotecaComunitaria)
-        OPTIONAL MATCH (b)-[r1:TIENE_TECNOLOGIA]->(t1:TipoTecnologia)
-        OPTIONAL MATCH (b)-[r2:USA_TECNOLOGIA]->(t2:Tecnologia) 
-        RETURN 
-            b.id AS BibliotecaID, 
-            b.nombre AS BibliotecaNombre, 
-            CASE WHEN t1.nombre = "computadores" THEN true ELSE false END AS tieneComputador,
-            t2.conectividad AS tieneConectividad
-        """
 
-    @staticmethod
-    def diversidad_colecciones():
-        return """
-        MATCH (b:BibliotecaComunitaria)-[:TIENE_COLECCION]->(c:Coleccion)
-        RETURN b.id AS BibliotecaID, collect(DISTINCT c.tipo) AS tipos_coleccion
-        """
+def a_float(valor):
+    try:
+        return float(valor)
+    except ValueError:
+        return None
 
-    @staticmethod
-    def cantidad_material_bibliografico():
-        return """
-        MATCH (b:BibliotecaComunitaria)
-        RETURN b.id AS BibliotecaID, b.cantidad_inventario AS cantidad_inventario
-        """
 
-    @staticmethod
-    def diversidad_servicios():
-        return """
-        MATCH (b:BibliotecaComunitaria)-[:OFRECE_SERVICIO]->(s:Servicio)
-        RETURN b.id AS BibliotecaID, collect(DISTINCT s.tipo) AS servicios
-        """
-
-    @staticmethod
-    def tipos_coleccion():
-        return """
-        MATCH (b:BibliotecaComunitaria)-[:TIENE_COLECCION]->(c:Coleccion)
-        RETURN b.id AS BibliotecaID, collect(DISTINCT c.tipo) AS tipos_coleccion
-        """
+def a_int(valor):
+    try:
+        return int(valor)
+    except ValueError:
+        return None
