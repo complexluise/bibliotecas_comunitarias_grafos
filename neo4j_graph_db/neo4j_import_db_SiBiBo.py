@@ -2,7 +2,7 @@ import csv
 import logging
 from neo4j import GraphDatabase
 from datetime import datetime
-from utils import Neo4jQueryManager
+from utils import Neo4JQueryManager
 
 # Configure logging
 logging.basicConfig(
@@ -14,6 +14,7 @@ logging.basicConfig(
     ]
 )
 
+
 def extract_csv(ruta_archivo):
     logging.info(f"Reading CSV file from: {ruta_archivo}")
     try:
@@ -23,7 +24,8 @@ def extract_csv(ruta_archivo):
             logging.info(f"Successfully read {len(data)} rows from CSV")
             return data
     except Exception as e:
-        logging.error(f"Error reading CSV file: {str(e)}")
+        logging.error(f"Error reading"
+                      f" CSV file: {str(e)}")
         raise
 
 
@@ -332,10 +334,12 @@ def crear_grafo(tx, datos_biblioteca):
 def main():
     import os
 
-    csv_file_path = 'Contacto Bibliotecas - DB SIBIBO Comunitario.csv'  # Replace with your CSV file path
-    neo4j_uri = os.getenv("NEO4J_URI")  # Replace with your Neo4j URI
-    neo4j_user = os.getenv("NEO4J_USER")  # Replace with your Neo4j username
-    neo4j_password = os.getenv("NEO4J_PASSWORD")  # Replace with your Neo4j password
+    logging.info("Starting bibliotecas comunitarias import process")
+
+    csv_file_path = 'data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'
+    neo4j_uri = os.getenv("NEO4J_URI")
+    neo4j_user = os.getenv("NEO4J_USER")
+    neo4j_password = os.getenv("NEO4J_PASSWORD")
 
     if not all([neo4j_uri, neo4j_user, neo4j_password]):
         logging.error("Missing Neo4j environment variables")
