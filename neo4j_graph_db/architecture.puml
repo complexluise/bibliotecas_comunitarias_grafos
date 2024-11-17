@@ -1,0 +1,37 @@
+@startuml
+
+skin rose
+
+title "Mapeo de la colecciones de las bibliotecas comunitarias"
+
+rectangle "Google Sheets" as GoogleSheets {
+    entity "Base de Datos SiBiBo" as SiBiBo
+    entity "Encuestas de Mapeo" as Encuestas
+    entity "Categorías y Coordenadas" as Categorias
+}
+
+database "Grafo de Conocimiento (Neo4j)" as Neo4j
+component "ETL (Python)" as PythonETL
+entity "Archivo Tabular (Transformación de Encuestas)" as ArchivoTabular
+
+folder "Reportes" {
+    file "Reporte de Mapeo de Colecciones" as MapeoReporte
+    file "Reporte de Priorización (Adopción Koha)" as PriorizacionReporte
+    file "Visualizaciones" as Visualizaciones
+}
+
+GoogleSheets --> PythonETL : Extracción de datos
+
+SiBiBo --> PythonETL : Carga al grafo
+PythonETL --> Neo4j : Carga de datos al grafo
+
+Neo4j --> ArchivoTabular: Fuente de datos
+PythonETL --> ArchivoTabular : Transformación de Encuestas y Datos Operacionales
+Encuestas --> PythonETL : Transformación a datos numéricos
+Categorias --> PythonETL : Uso en transformaciones de datos
+
+ArchivoTabular --> MapeoReporte : Generación de reporte
+ArchivoTabular --> PriorizacionReporte : Generación de reporte
+ArchivoTabular --> Visualizaciones : Generación de visualizaciones
+
+@enduml
