@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 
-from etl.query_manager import Neo4JQueryManager
-from etl.utils import parsear_fecha, a_float, a_bool, a_int, setup_logger, extract_csv
+from etl.graph_db.query_manager import Neo4JQueryManager
+from etl.utils.utils import parsear_fecha, a_float, a_bool, a_int, setup_logger, extract_csv
 
 logger = setup_logger("neo4j_import_db.log")
 

@@ -1,5 +1,5 @@
 from etl.coordinates.base import AnalysisCoordinate
-from etl.constants import AnalysisCategory
+from etl.utils.constants import AnalysisCategory
 
 from pandas import DataFrame, notnull
 

@@ -1,6 +1,6 @@
 from etl.coordinates.base import AnalysisCoordinate
-from etl.constants import AnalysisCategory
-from etl.utils import Neo4JQueryManager
+from etl.utils.constants import AnalysisCategory
+from etl.graph_db.query_manager import Neo4JQueryManager
 from pandas import DataFrame
 
 
