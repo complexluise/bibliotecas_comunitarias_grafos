@@ -32,7 +32,7 @@ def setup_logger(log_filename: str) -> logging.Logger:
     return logger
 
 
-def extract_csv(ruta_archivo):
+def extract_csv(ruta_archivo: str) -> list[dict]:
     logging.info(f"Reading CSV file from: {ruta_archivo}")
     try:
         with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
