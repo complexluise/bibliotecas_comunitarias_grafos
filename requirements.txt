@@ -4,3 +4,7 @@ langchain_community
 langchain_openai
 neo4j
 scikit-learn
+jupyter
+matplotlib
+seaborn
+python-dotenv
