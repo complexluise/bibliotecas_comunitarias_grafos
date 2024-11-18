@@ -1,5 +1,5 @@
-from neo4j_graph_db.coordinates.base import AnalysisCoordinate
-from neo4j_graph_db.constants import AnalysisCategory
+from etl.coordinates.base import AnalysisCoordinate
+from etl.constants import AnalysisCategory
 
 from pandas import DataFrame, notnull
 

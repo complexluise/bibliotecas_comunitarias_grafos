@@ -4,16 +4,16 @@ from typing import List
 import pandas as pd
 from neo4j import GraphDatabase
 
-from neo4j_graph_db.coordinates.base import AnalysisCoordinate
+from etl.coordinates.base import AnalysisCoordinate
 
-from neo4j_graph_db.coordinates.digital_level_coordinates import (
+from etl.coordinates.digital_level_coordinates import (
     InfraestructuraTecnologicaCoordinate,
     EstadoDigitalizacionCatalogoCoordinate,
     PorcentajeColeccionCatalogoCoordinate,
     NivelInformacionCatalogoCoordinate
 )
 
-from neo4j_graph_db.coordinates.sistem_level_coordinate import (
+from etl.coordinates.sistem_level_coordinate import (
     SistemasClasificacionCoordinate,
     NivelDetalleOrganizacionColeccionCoordinate,
     TiempoBusquedaLibroCoordinate,
@@ -22,7 +22,7 @@ from neo4j_graph_db.coordinates.sistem_level_coordinate import (
     SistematizacionPrestamoExternoCoordinate
 )
 
-from neo4j_graph_db.coordinates.collection_coordinate import (
+from etl.coordinates.collection_coordinate import (
     DiversidadColeccionesCoordinate,
     CantidadMaterialBibliograficoCoordinate,
     PercepcionEstadoFisicoColeccionCoordinate,
@@ -32,7 +32,7 @@ from neo4j_graph_db.coordinates.collection_coordinate import (
     ColeccionesEspecialesCoordinate,
 )
 
-from neo4j_graph_db.coordinates.facilidad_adopcion_coordinate import (
+from etl.coordinates.facilidad_adopcion_coordinate import (
     PorcentajeColeccionCatalogadaCoordinate,
     CapacidadTecnicaPersonalCoordinate,
     NivelImpactoKohaCoordinate,
