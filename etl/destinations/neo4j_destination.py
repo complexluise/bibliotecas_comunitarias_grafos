@@ -7,7 +7,7 @@ from etl.utils.models import Neo4JConfig
 class Neo4jDestination(DataDestination):
     def __init__(self, config: Neo4JConfig):
         self.uri = config.uri
-        self.username = config.username
+        self.username = config.user
         self.password = config.password
         self._driver = None
 
