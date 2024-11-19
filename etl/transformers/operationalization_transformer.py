@@ -146,7 +146,7 @@ class OperationalizationTransformer(DataTransformer):
             "tipos_coleccion": TiposColeccionCoordinate(data_source.driver),
         }
 
-        results = pd.DataFrame()
+        results = pd.DataFrame({'BibliotecaID': data_source.bibliotecas_id})
         for key, enabled in self.coordinates_config.items():
             if enabled:
                 logger.debug(f"Processing coordinate: {key}")
@@ -155,9 +155,11 @@ class OperationalizationTransformer(DataTransformer):
                     coordinate_results = coordinate.calculate_score(
                         data_source.bibliotecas_id
                     )
-                    coordinate_results["Categoría"] = coordinate.category
-                    coordinate_results["Coordenada"] = coordinate.name
-                    results = pd.concat([results, coordinate_results], ignore_index=True)
+                    results = results.merge(
+                        coordinate_results,
+                        on='BibliotecaID',
+                        how='left'
+                    )
                     logger.info(f"Successfully processed coordinate: {key}")
                 except Exception as e:
                     logger.error(f"Error processing coordinate {key}: {str(e)}")
