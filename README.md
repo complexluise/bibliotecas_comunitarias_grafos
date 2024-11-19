@@ -96,21 +96,22 @@ El CLI (Command Line Interface) proporciona una interfaz amigable para ejecutar 
 
 1. **Procesar Todo el Pipeline**:
 ```bash
-python -m etl process-all --input-libraries "data/libraries.csv" --input-coords "data/coordinates.csv" --output "output/results.csv"
+python -m etl process-all --library-data data/libraries.csv --survey-data data/survey.csv --analysis-output output/results.csv
+
 ```
 Este comando ejecuta tanto la construcción del grafo como el análisis de operacionalización.
 
 #### b) Procesar solo el grafo de conocimiento
 
 ```bash
-python -m etl knowledge-graph --input-libraries "data/libraries.csv"
+python -m etl knowledge-graph --library-data data/libraries.csv
 ```
 Construye únicamente el grafo de conocimiento en Neo4j.
 
 #### c) Procesar solo la operacionalización
 
 ```bash
-python -m etl operationalization --output "output/results.csv"
+python -m etl operationalization --survey-data data/survey.csv --output output/results.csv
 ```
 Genera el análisis de operacionalización y exporta los resultados.
 
