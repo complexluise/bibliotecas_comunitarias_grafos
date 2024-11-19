@@ -1,68 +1,108 @@
 from etl.utils.utils import extract_csv, setup_logger
 from etl.neo4j_import_db_SiBiBo import crear_objetos_neo4j, cargar_datos_en_neo4j
 from etl.utils.models import Neo4JConfig
-# Configurations and Constants
-NEO4J_CONFIG = {
+
+# Configuraciones y Constantes
+CONFIGURACION_NEO4J = {
     "uri": "bolt://localhost:7687",
-    "user": "neo4j",
-    "password": "password"
+    "usuario": "neo4j",
+    "contraseña": "password"
 }
 
-logger = setup_logger("etl_main.log")
+registrador = setup_logger("etl_main.log")
 
 
-class ETLProcess:
-    def __init__(self, neo4j_config: Neo4JConfig):
-        self.neo4j_config = neo4j_config
-        self.raw_data = {}
-        self.transformed_data = {}
+class ProcesoETL:
+    """
+    Clase que maneja el proceso ETL para datos de bibliotecas.
+
+    Esta clase implementa las operaciones de Extracción, Transformación y Carga
+    de datos para su procesamiento en Neo4j.
+
+    Atributos:
+        configuracion_neo4j (Neo4JConfig): Configuración para la conexión a Neo4j.
+        datos_crudos (dict): Almacena los datos sin procesar.
+        datos_transformados (dict): Almacena los datos después de la transformación.
+    """
+
+    def __init__(self, configuracion_neo4j: Neo4JConfig):
+        self.configuracion_neo4j = configuracion_neo4j
+        self.datos_crudos = {}
+        self.datos_transformados = {}
 
     @staticmethod
-    def extract(csv_file_path: str) -> list[dict]:
-        """Extract data from CSV source"""
-        logger.info("Starting data extraction")
-        return extract_csv(csv_file_path)
+    def extraer(ruta_archivo_csv: str) -> list[dict]:
+        """
+        Extrae datos desde un archivo CSV.
+
+        Args:
+            ruta_archivo_csv (str): Ruta al archivo CSV que contiene los datos.
+
+        Returns:
+            list[dict]: Lista de diccionarios con los datos extraídos del CSV.
+        """
+        registrador.info("Iniciando extracción de datos")
+        return extract_csv(ruta_archivo_csv)
 
     @staticmethod
-    def transform(raw_data: list[dict]) -> list[dict]:
-        """Transform raw data into Neo4j compatible format"""
-        logger.info("Starting data transformation")
-        # TODO filter by field with data.
-        return [crear_objetos_neo4j(row) for row in raw_data]
+    def transformar(datos_crudos: list[dict]) -> list[dict]:
+        """
+        Transforma los datos crudos al formato compatible con Neo4j.
 
-    def load(self, transformed_data: list[dict]):
-        """Load data into Neo4j"""
-        logger.info("Starting data loading to Neo4j")
+        Args:
+            datos_crudos (list[dict]): Lista de diccionarios con los datos sin procesar.
+
+        Returns:
+            list[dict]: Lista de diccionarios con los datos transformados.
+        """
+        registrador.info("Iniciando transformación de datos")
+        return [crear_objetos_neo4j(fila) for fila in datos_crudos]
+
+    def cargar(self, datos_transformados: list[dict]):
+        """
+        Carga los datos transformados en la base de datos Neo4j.
+
+        Args:
+            datos_transformados (list[dict]): Lista de diccionarios con los datos
+                                            transformados listos para cargar.
+        """
+        registrador.info("Iniciando carga de datos en Neo4j")
         cargar_datos_en_neo4j(
-            uri=self.neo4j_config["uri"],
-            usuario=self.neo4j_config["user"],
-            contraseña=self.neo4j_config["password"],
-            datos=transformed_data
+            uri=self.configuracion_neo4j["uri"],
+            usuario=self.configuracion_neo4j["usuario"],
+            contraseña=self.configuracion_neo4j["contraseña"],
+            datos=datos_transformados
         )
 
 
-def main():
-    csv_file_path = '../data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'
+def principal():
+    """
+    Función principal que ejecuta el proceso ETL completo.
 
-    etl = ETLProcess(NEO4J_CONFIG)
+    Coordina la extracción de datos desde un CSV, su transformación
+    y posterior carga en Neo4j.
+    """
+    ruta_archivo_csv = '../data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'
+
+    etl = ProcesoETL(CONFIGURACION_NEO4J)
 
     try:
-        # Extract
-        raw_data = etl.extract(csv_file_path)
-        logger.info(f"Extracted {len(raw_data)} records")
+        # Extraer
+        datos_crudos = etl.extraer(ruta_archivo_csv)
+        registrador.info(f"Extraídos {len(datos_crudos)} registros")
 
-        # Transform
-        transformed_data = etl.transform(raw_data)
-        logger.info(f"Transformed {len(transformed_data)} records")
+        # Transformar
+        datos_transformados = etl.transformar(datos_crudos)
+        registrador.info(f"Transformados {len(datos_transformados)} registros")
 
-        # Load
-        etl.load(transformed_data)
-        logger.info("ETL process completed successfully")
+        # Cargar
+        etl.cargar(datos_transformados)
+        registrador.info("Proceso ETL completado exitosamente")
 
     except Exception as e:
-        logger.error(f"ETL process failed: {str(e)}")
+        registrador.error(f"Proceso ETL fallido: {str(e)}")
         raise
 
 
 if __name__ == "__main__":
-    main()
+    principal()
