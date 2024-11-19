@@ -1,36 +1,55 @@
 # Mapeo de las Colecciones de las Bibliotecas Comunitarias de Bogotá
 
-## Descripción General
+![Bibliotecas Comunitarias](https://example.com/path/to/logo_or_image)
 
-Este proyecto realiza el **mapeo de colecciones** en las bibliotecas comunitarias de Bogotá, con un enfoque basado en **analítica de datos** y **representación relacional**. A través de un grafo de conocimiento, el sistema caracteriza las colecciones, las interrelaciones entre las bibliotecas y sus características clave, lo que permite generar análisis estratégicos para el fortalecimiento de estas instituciones.
+Un proyecto de **mapeo de colecciones** que utiliza analítica de datos y un **grafo de conocimiento** para caracterizar las bibliotecas comunitarias de Bogotá, identificar sus fortalezas y necesidades, y priorizar la implementación de tecnologías como catálogos digitales.
 
-## Características del Sistema
+---
+
+## ✨ Descripción General
+
+Este proyecto busca:
+
+- Representar las **relaciones e interdependencias** entre bibliotecas y sus colecciones.
+- Ofrecer análisis estratégicos para el **fortalecimiento** de las bibliotecas.
+- Facilitar la **toma de decisiones** basada en datos.
+
+---
+
+## ⚙️ Características del Sistema
 
 - **Grafo de Conocimiento**:
-  - Nodos: Representan entidades como bibliotecas, colecciones, y tecnologías.
-  - Relaciones: Capturan interacciones y dependencias entre nodos, como ubicación, servicios, y actividades.
+  - **Nodos**: Bibliotecas, colecciones, tecnologías, entre otros.
+  - **Relaciones**: Ubicación, servicios, actividades, y más.
 
 - **Análisis Multidimensional**:
-  - Nivel de digitalización y sistematización.
-  - Caracterización de colecciones.
-  - Evaluación de la facilidad de adopción de tecnología.
+  - Nivel de **digitalización** y **sistematización**.
+  - **Caracterización** de colecciones.
+  - Evaluación de la **adopción tecnológica**.
 
 - **Exportación de Resultados**:
-  - Reportes en formato CSV con métricas clave y evaluaciones.
+  - Reportes en CSV con métricas clave y evaluaciones.
 
-## Metodología
+---
 
-1. **Recopilación de Datos**: Se utilizan bases de datos y formularios que contienen información sobre bibliotecas y colecciones.
-2. **Construcción del Grafo**: Neo4j es utilizado para modelar las bibliotecas y sus relaciones clave.
+## 🛠️ Metodología
+
+1. **Recopilación de Datos**:
+   - Bases de datos y formularios con información sobre bibliotecas y colecciones.
+2. **Construcción del Grafo**:
+   - Utiliza Neo4j para modelar bibliotecas y sus relaciones.
 3. **Análisis**:
-   - Evaluación de dimensiones específicas de las colecciones.
-   - Representación espacial de bibliotecas según sus características.
-4. **Tipificación**: Identificación de categorías que agrupan a las bibliotecas según similitudes y diferencias.
-5. **Priorización Tecnológica**: Identificación de bibliotecas más aptas para la implementación de un catálogo digital.
+   - Dimensiones específicas y representaciones espaciales.
+4. **Tipificación**:
+   - Agrupación de bibliotecas por similitudes.
+5. **Priorización Tecnológica**:
+   - Identificación de bibliotecas aptas para la implementación de catálogos digitales.
 
-## Estructura del Proyecto
+---
 
-```
+## 📂 Estructura del Proyecto
+
+```plaintext
 ├── data/                    # Datos de entrada
 ├── output/                  # Resultados del análisis
 └── etl/                     # Código fuente
@@ -41,7 +60,9 @@ Este proyecto realiza el **mapeo de colecciones** en las bibliotecas comunitaria
     └── coordinates/       # Cálculo de coordenadas
 ```
 
-## Requisitos
+---
+
+## 🚀 Requisitos
 
 ### Instalación
 
@@ -53,59 +74,87 @@ pip install -r requirements.txt
 
 ### Configuración
 
-- Credenciales de Neo4j en las variables de entorno.
-- Archivos CSV colocados en `data/`:
-  - Base de datos de bibliotecas comunitarias.
-  - Formulario con coordenadas.
+- **Credenciales de Neo4j**: Configura las variables de entorno.
+- **Archivos CSV en `data/`**:
+  - `libraries.csv` (Base de datos de bibliotecas comunitarias).
+  - `coordinates.csv` (Respuestas formulario con coordenadas).
 
-## Uso
+---
 
-## Uso
+## 🛠️ Uso
 
-1. **Preparar los datos**:
-   - Coloca los archivos CSV requeridos en la carpeta `data/`:
-     - `BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv`
-     - `Contacto Bibliotecas - Formulario Coordenadas.csv`
+### 1. Preparar los datos
 
-2. **Ejecutar el CLI**:
-
-   El sistema provee varios comandos a través de su interfaz CLI:
-
-   - Procesar todo el pipeline (grafo y operacionalización):
-     ```bash
-     python -m etl process-all
-     ```
-
-   - Procesar solo el grafo de conocimiento:
-     ```bash
-     python -m etl knowledge-graph
-     ```
-
-   - Procesar solo la operacionalización:
-     ```bash
-     python -m etl operationalization
-     ```
-
-   Opciones disponibles para todos los comandos:
-   - `--neo4j-uri`: URI de conexión a Neo4j (default: "bolt://localhost:7687")
-   - `--neo4j-user`: Usuario de Neo4j (default: "neo4j")
-   - `--neo4j-password`: Contraseña de Neo4j (se solicitará de forma segura)
-
-   Ejemplo con parámetros personalizados:
-   ```bash
-   python -m etl process-all --neo4j-uri "bolt://myserver:7687" --neo4j-user "admin"
-
-3. **Resultados**:
-   - **Grafo de conocimiento**: Relaciones entre bibliotecas y sus características.
-   - **Análisis**: Archivo CSV con métricas por biblioteca y dimensión evaluada.
+Coloca los archivos CSV requeridos en la carpeta `data/`:
 
 
-## Contribuciones
+### 2. Ejecutar el CLI
 
-- Realiza un fork del repositorio.
-- Crea una rama para la funcionalidad que deseas agregar.
-- Envíanos un pull request.
+El sistema ofrece tres comandos principales:
 
-## Licencia
+#### a) Procesar todo el pipeline
 
-Este proyecto está bajo Apache License Version 2.0.
+```bash
+python -m etl.cli process-all --input-libraries "data/libraries.csv" --input-coords "data/coordinates.csv" --output "output/results.csv"
+```
+
+#### b) Procesar solo el grafo de conocimiento
+
+```bash
+python -m etl.cli knowledge-graph --input-libraries "data/libraries.csv"
+```
+
+#### c) Procesar solo la operacionalización
+
+```bash
+python -m etl.cli operationalization --output "output/results.csv"
+```
+
+### Opciones comunes
+
+| **Opción**             | **Descripción**                                 | **Predeterminado**             |
+|-------------------------|-----------------------------------------------|--------------------------------|
+| `--neo4j-uri`          | URI de conexión a Neo4j                       | `bolt://localhost:7687`       |
+| `--neo4j-user`         | Usuario de Neo4j                              | `neo4j`                       |
+| `--neo4j-password`     | Contraseña de Neo4j                           | *(Se solicitará de forma segura)* |
+| `--input-libraries`    | Archivo CSV de bibliotecas                    | Requerido para `process-all` y `knowledge-graph` |
+| `--input-coords`       | Archivo CSV de coordenadas                    | Requerido para `process-all` |
+| `--output`             | Archivo CSV de resultados                     | Requerido para `process-all` y `operationalization` |
+
+#### Ejemplo completo
+
+```bash
+python -m etl.cli process-all \
+  --neo4j-uri "bolt://localhost:7687" \
+  --neo4j-user "neo4j" \
+  --input-libraries "data/libraries.csv" \
+  --input-coords "data/coordinates.csv" \
+  --output "output/analysis_results.csv"
+```
+
+---
+
+## 📊 Resultados
+
+1. **Grafo de Conocimiento**:
+   - Relaciones entre bibliotecas y sus características.
+   - Visualización en Neo4j.
+
+2. **Análisis**:
+   - Archivo CSV con métricas por biblioteca y dimensión evaluada.
+
+---
+
+## 🖋️ Contribuciones
+
+¡Las contribuciones son bienvenidas! 🎉
+
+1. Realiza un **fork** del repositorio.
+2. Crea una **rama** para tu funcionalidad.
+3. Envía un **pull request**.
+
+---
+
+## 📜 Licencia
+
+Este proyecto está bajo la [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
