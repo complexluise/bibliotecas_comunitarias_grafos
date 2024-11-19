@@ -1,5 +1,6 @@
 from etl.destinations.csv_destination import CSVDestination
 from etl.sources.operationalization_source import OperationalizationSource
+from etl.transformers.operationalization_transformer import OperationalizationTransformer
 from etl.utils.utils import setup_logger
 from etl.utils.models import Neo4JConfig
 from etl.core.pipeline import ETLPipeline
