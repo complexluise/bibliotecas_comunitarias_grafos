@@ -49,7 +49,7 @@ class Neo4JConfig:
     password: str = os.getenv("NEO4J_PASSWORD")
 
 
-class AnalysisManager:
+class OperationalizationManager:
     def __init__(self, graph_db_config: Neo4JConfig, csv_path: str):
         self.driver = GraphDatabase.driver(
             graph_db_config.uri, auth=(graph_db_config.user, graph_db_config.password)
@@ -77,8 +77,8 @@ class AnalysisManager:
 
 def main():
     db_config = Neo4JConfig()
-    analyzer = AnalysisManager(
-        db_config, "../data/Contacto Bibliotecas - Formulario Coordenadas.csv"
+    analyzer = OperationalizationManager(
+        db_config, "../../data/Contacto Bibliotecas - Formulario Coordenadas.csv"
     )
 
     coordinates_config = {
