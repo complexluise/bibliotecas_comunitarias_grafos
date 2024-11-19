@@ -3,20 +3,25 @@ from csv import DictReader
 from datetime import datetime
 
 
-def setup_logger(log_filename: str) -> logging.Logger:
+def setup_logger(log_filename: str, logger_name: str = None) -> logging.Logger:
     """
     Creates a logger with both file and console handlers
 
     Args:
         log_filename: Name of the log file to write to
+        logger_name: Optional name for the logger, defaults to module name
 
     Returns:
         Logger instance configured with file and console handlers
     """
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger = logging.getLogger(logger_name if logger_name else __name__)
 
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    # Prevent duplicate handlers
+    if logger.handlers:
+        return logger
+
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # File handler
     file_handler = logging.FileHandler(log_filename)

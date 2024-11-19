@@ -10,7 +10,7 @@ from etl.transformers import BibliotecasTransformer, OperationalizationTransform
 from etl.utils import setup_logger, Neo4JConfig
 
 console = Console()
-registrador = setup_logger("etl_main.log")
+logger = setup_logger("etl.log", "etl.cli")
 
 
 def process_with_progress(func, *args, **kwargs):

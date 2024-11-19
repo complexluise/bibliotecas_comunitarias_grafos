@@ -1,10 +1,10 @@
 from typing import List, Dict
 from dataclasses import dataclass
-from logging import getLogger
-from etl.core.base import DataTransformer
-from etl.utils.utils import parsear_fecha, a_float, a_bool, a_int
+from etl.core import DataTransformer
+from etl.utils.utils import parsear_fecha, a_float, a_bool, a_int, setup_logger
 
-logger = getLogger(__name__)
+logger = setup_logger("etl.log", "etl.transformers.bibliotecas")
+
 
 
 @dataclass
