@@ -22,9 +22,9 @@ def process_with_progress(func, *args, **kwargs):
         **kwargs: Argumentos con nombre para pasar a la función
     """
     with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console,
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
     ) as progress:
         progress.add_task(description=f"Procesando  {func.__name__}...", total=None)
         func(*args, **kwargs)
@@ -38,9 +38,7 @@ def process_knowledge_graph(config: Neo4JConfig, library_data_path: str):
         library_data_path (str): Ruta al archivo CSV que contiene datos de bibliotecas.
     """
     pipeline = ETLPipeline(
-        source=CSVDataSource(
-            library_data_path
-        ),
+        source=CSVDataSource(library_data_path),
         transformer=BibliotecasTransformer(),
         destination=BibliotecaNeo4jDestination(config),
     )
@@ -48,7 +46,9 @@ def process_knowledge_graph(config: Neo4JConfig, library_data_path: str):
     pipeline.execute()
 
 
-def process_operationalization(neo4j_config: Neo4JConfig, survey_data_path: str, output_path: str):
+def process_operationalization(
+    neo4j_config: Neo4JConfig, survey_data_path: str, output_path: str
+):
     """Procesa datos de operacionalización y exporta a CSV.
 
     Args:
@@ -57,9 +57,7 @@ def process_operationalization(neo4j_config: Neo4JConfig, survey_data_path: str,
         output_path (str): Ruta para los resultados del análisis.
     """
     pipeline = ETLPipeline(
-        source=OperationalizationSource(
-            neo4j_config, survey_data_path
-        ),
+        source=OperationalizationSource(neo4j_config, survey_data_path),
         transformer=OperationalizationTransformer(),
         destination=CSVDestination(output_path),
     )
@@ -93,9 +91,14 @@ def cli():
         )
     )
 
+
 @cli.command()
-@click.option('--survey-data', required=True, help="Path to libraries survey data CSV file")
-@click.option('--output', required=True, help="Path to output analysis results CSV file")
+@click.option(
+    "--survey-data", required=True, help="Path to libraries survey data CSV file"
+)
+@click.option(
+    "--output", required=True, help="Path to output analysis results CSV file"
+)
 def operationalization(survey_data, output):
     """Procesa los datos de operacionalización de las respuestas de la encuesta.
 
@@ -109,7 +112,7 @@ def operationalization(survey_data, output):
 
 
 @cli.command()
-@click.option('--library-data', required=True, help="Path to libraries CSV file")
+@click.option("--library-data", required=True, help="Path to libraries CSV file")
 def knowledge_graph(library_data):
     """Procesa solo los datos del grafo de conocimiento.
 
@@ -122,9 +125,15 @@ def knowledge_graph(library_data):
 
 
 @cli.command()
-@click.option('--library-data', required=True, help="Path to libraries master data CSV file")
-@click.option('--survey-data', required=True, help="Path to libraries survey data CSV file")
-@click.option('--analysis-output', required=True, help="Path to analysis results CSV file")
+@click.option(
+    "--library-data", required=True, help="Path to libraries master data CSV file"
+)
+@click.option(
+    "--survey-data", required=True, help="Path to libraries survey data CSV file"
+)
+@click.option(
+    "--analysis-output", required=True, help="Path to analysis results CSV file"
+)
 def process_all(library_data, survey_data, analysis_output):
     """Procesa tanto el grafo de conocimiento como el análisis de operacionalización.
 
@@ -140,7 +149,9 @@ def process_all(library_data, survey_data, analysis_output):
         process_with_progress(process_knowledge_graph, neo4j_config, library_data)
 
         console.print("[bold blue]Iniciando análisis de operacionalización...")
-        process_with_progress(process_operationalization, neo4j_config, survey_data, analysis_output)
+        process_with_progress(
+            process_operationalization, neo4j_config, survey_data, analysis_output
+        )
 
     console.print("[bold green]✨ ¡Todo el procesamiento se completó exitosamente!")
 

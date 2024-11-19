@@ -6,7 +6,6 @@ from etl.utils.utils import parsear_fecha, a_float, a_bool, a_int, setup_logger
 logger = setup_logger("etl.log", "etl.transformers.bibliotecas")
 
 
-
 @dataclass
 class TransformationConfig:
     TIPOS_COLECCION = [

@@ -46,10 +46,12 @@ class Neo4jDestination(DataDestination):
 
     @staticmethod
     def _create_node(tx, node_type: str, properties: Dict):
-        if not properties.get('id'):
-            properties['id'] = str(uuid.uuid4())[:8]
+        if not properties.get("id"):
+            properties["id"] = str(uuid.uuid4())[:8]
 
-        clean_properties = {k: v for k, v in properties.items() if v is not None or v != ""}
+        clean_properties = {
+            k: v for k, v in properties.items() if v is not None or v != ""
+        }
 
         query = f"""
         MERGE (n:{node_type} {{id: $properties.id}})

@@ -21,7 +21,9 @@ def setup_logger(log_filename: str, logger_name: str = None) -> logging.Logger:
         return logger
 
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
 
     # File handler
     file_handler = logging.FileHandler(log_filename)
