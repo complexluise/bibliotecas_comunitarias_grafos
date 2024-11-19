@@ -38,36 +38,36 @@ from etl.coordinates.facilidad_adopcion_coordinate import (
 class OperationalizationTransformer(DataTransformer):
     def __init__(self):
         self.coordinates_config = {
-        # Nivel de avance en la digitalización del catálogo
-        "infraestructura": True,
-        "estado_digitalizacion": True,
-        "porcentaje_coleccion": True,
-        "nivel_informacion": True,
-        # Nivel de avance en la sistematización
-        "sistemas_clasificacion": False,
-        "nivel_detalle": False,
-        "tiempo_busqueda": False,
-        "sistema_registro": False,
-        "reglamento_servicios": False,
-        "sistematizacion_prestamo": False,
-        # Caracterización de la colección
-        "diversidad_colecciones": False,
-        "cantidad_material": False,
-        "percepcion_estado": False,
-        "enfoques_colecciones": False,
-        "actividades_mediacion": False,
-        "frecuencia_actividades": False,
-        "colecciones_especiales": False,
-        # Facilidad de Adopción del Catálogo en Koha
-        "porcentaje_catalogada": False,
-        "capacidad_tecnica": False,
-        # Impacto de Adoptar Koha
-        "nivel_impacto": False,
-        "diversidad_servicios": False,
-        "sobrecarga_administrativa": False,
-        # Detalle Colección Koha
-        "tipos_coleccion": False,
-    }
+            # Nivel de avance en la digitalización del catálogo
+            "infraestructura": True,
+            "estado_digitalizacion": True,
+            "porcentaje_coleccion": True,
+            "nivel_informacion": True,
+            # Nivel de avance en la sistematización
+            "sistemas_clasificacion": False,
+            "nivel_detalle": False,
+            "tiempo_busqueda": False,
+            "sistema_registro": False,
+            "reglamento_servicios": False,
+            "sistematizacion_prestamo": False,
+            # Caracterización de la colección
+            "diversidad_colecciones": False,
+            "cantidad_material": False,
+            "percepcion_estado": False,
+            "enfoques_colecciones": False,
+            "actividades_mediacion": False,
+            "frecuencia_actividades": False,
+            "colecciones_especiales": False,
+            # Facilidad de Adopción del Catálogo en Koha
+            "porcentaje_catalogada": False,
+            "capacidad_tecnica": False,
+            # Impacto de Adoptar Koha
+            "nivel_impacto": False,
+            "diversidad_servicios": False,
+            "sobrecarga_administrativa": False,
+            # Detalle Colección Koha
+            "tipos_coleccion": False,
+        }
 
     def transform(self, data_source: OperationalizationDataSource) -> pd.DataFrame:
         coordinate_mappings = {
@@ -102,8 +102,12 @@ class OperationalizationTransformer(DataTransformer):
                 data_source.driver, data_source.df_encuestas
             ),
             # Caracterización de la colección
-            "diversidad_colecciones": DiversidadColeccionesCoordinate(data_source.driver),
-            "cantidad_material": CantidadMaterialBibliograficoCoordinate(data_source.driver),
+            "diversidad_colecciones": DiversidadColeccionesCoordinate(
+                data_source.driver
+            ),
+            "cantidad_material": CantidadMaterialBibliograficoCoordinate(
+                data_source.driver
+            ),
             "percepcion_estado": PercepcionEstadoFisicoColeccionCoordinate(
                 data_source.driver, data_source.df_encuestas
             ),
@@ -142,7 +146,9 @@ class OperationalizationTransformer(DataTransformer):
         for key, enabled in self.coordinates_config.items():
             if enabled:
                 coordinate = coordinate_mappings[key]
-                coordinate_results = coordinate.calculate_score(data_source.bibliotecas_id)
+                coordinate_results = coordinate.calculate_score(
+                    data_source.bibliotecas_id
+                )
                 coordinate_results["Categoría"] = coordinate.category
                 coordinate_results["Coordenada"] = coordinate.name
                 results = pd.concat([results, coordinate_results], ignore_index=True)

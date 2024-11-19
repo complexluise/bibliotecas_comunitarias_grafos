@@ -10,34 +10,75 @@ logger = getLogger(__name__)
 @dataclass
 class TransformationConfig:
     TIPOS_COLECCION = [
-        "literatura", "infantiles", "informativos", "texto", "didacticos",
-        "revistas_periodicos", "audiovisuales", "juegos", "digitales",
-        "fanzines", "enfoques", "autoedicion", "otros"
+        "literatura",
+        "infantiles",
+        "informativos",
+        "texto",
+        "didacticos",
+        "revistas_periodicos",
+        "audiovisuales",
+        "juegos",
+        "digitales",
+        "fanzines",
+        "enfoques",
+        "autoedicion",
+        "otros",
     ]
     TIPOS_SERVICIO = [
-        "consulta", "prestamo_externo", "internet", "leo", "culturales",
-        "alfabetizacion", "comunitarios", "otros"
+        "consulta",
+        "prestamo_externo",
+        "internet",
+        "leo",
+        "culturales",
+        "alfabetizacion",
+        "comunitarios",
+        "otros",
     ]
     TIPOS_ACTIVIDAD = [
-        "lectoescritura", "culturales", "formacion", "emprendimientos",
-        "produccion_comunitaria", "medioambientales", "psicosociales",
-        "ciencia", "otros"
+        "lectoescritura",
+        "culturales",
+        "formacion",
+        "emprendimientos",
+        "produccion_comunitaria",
+        "medioambientales",
+        "psicosociales",
+        "ciencia",
+        "otros",
     ]
     TIPOS_TECNOLOGIA = [
-        "computadores", "impresoras", "tabletas", "proyectores",
-        "smartphones", "ninguno", "otros"
+        "computadores",
+        "impresoras",
+        "tabletas",
+        "proyectores",
+        "smartphones",
+        "ninguno",
+        "otros",
     ]
     TIPOS_POBLACION = [
-        "infancias", "jovenes", "mujeres", "adultos_mayores",
-        "migrantes", "otros"
+        "infancias",
+        "jovenes",
+        "mujeres",
+        "adultos_mayores",
+        "migrantes",
+        "otros",
     ]
     TIPOS_ALIADOS = [
-        "editoriales", "fundaciones", "colectivos", "casa_cultura",
-        "consejo_cultura", "educativos", "bibliotecas_comunitarias", "otros"
+        "editoriales",
+        "fundaciones",
+        "colectivos",
+        "casa_cultura",
+        "consejo_cultura",
+        "educativos",
+        "bibliotecas_comunitarias",
+        "otros",
     ]
     TIPOS_FINANCIACION = [
-        "autogestion", "estimulos_distrito", "becas",
-        "convocatorias_internacionales", "patrocinios", "otros"
+        "autogestion",
+        "estimulos_distrito",
+        "becas",
+        "convocatorias_internacionales",
+        "patrocinios",
+        "otros",
     ]
 
 
@@ -65,7 +106,9 @@ class BibliotecasTransformer(DataTransformer):
                     transformed_row = self._transform_row(row)
                     transformed_data.append(transformed_row)
                 else:
-                    logger.warning(f"Invalid data row: {row.get('nombre_biblioteca', 'unknown')}")
+                    logger.warning(
+                        f"Invalid data row: {row.get('nombre_biblioteca', 'unknown')}"
+                    )
             except Exception as e:
                 logger.error(f"Error transforming row: {e}")
                 continue
@@ -80,17 +123,30 @@ class BibliotecasTransformer(DataTransformer):
             "localidad": {"nombre": row["9_localidad"]},
             "redes_sociales": self._transform_redes_sociales(row),
             "coleccion": self._transform_coleccion(row),
-            "tipos_coleccion": self._transform_tipos(row, TransformationConfig.TIPOS_COLECCION, "26_tipo_coleccion_"),
+            "tipos_coleccion": self._transform_tipos(
+                row, TransformationConfig.TIPOS_COLECCION, "26_tipo_coleccion_"
+            ),
             "catalogo": self._transform_catalogo(row),
             "soporte_catalogo": {"tipo": row["29_soporte_catalogo"]},
-            "tipos_servicio": self._transform_tipos(row, TransformationConfig.TIPOS_SERVICIO, "30_servicios_"),
-            "tipos_actividad": self._transform_tipos(row, TransformationConfig.TIPOS_ACTIVIDAD, "31_actividades_"),
+            "tipos_servicio": self._transform_tipos(
+                row, TransformationConfig.TIPOS_SERVICIO, "30_servicios_"
+            ),
+            "tipos_actividad": self._transform_tipos(
+                row, TransformationConfig.TIPOS_ACTIVIDAD, "31_actividades_"
+            ),
             "tecnologia": {"conectividad": a_bool(row["32_conectividad"])},
-            "tipos_tecnologia": self._transform_tipos(row, TransformationConfig.TIPOS_TECNOLOGIA, "33_tic_"),
-            "tipos_poblacion": self._transform_tipos(row, TransformationConfig.TIPOS_POBLACION, "34_poblacion_"),
-            "tipos_aliados": self._transform_tipos(row, TransformationConfig.TIPOS_ALIADOS, "35_aliados_"),
-            "tipos_financiacion": self._transform_tipos(row, TransformationConfig.TIPOS_FINANCIACION,
-                                                        "36_fuentes_financiacion_")
+            "tipos_tecnologia": self._transform_tipos(
+                row, TransformationConfig.TIPOS_TECNOLOGIA, "33_tic_"
+            ),
+            "tipos_poblacion": self._transform_tipos(
+                row, TransformationConfig.TIPOS_POBLACION, "34_poblacion_"
+            ),
+            "tipos_aliados": self._transform_tipos(
+                row, TransformationConfig.TIPOS_ALIADOS, "35_aliados_"
+            ),
+            "tipos_financiacion": self._transform_tipos(
+                row, TransformationConfig.TIPOS_FINANCIACION, "36_fuentes_financiacion_"
+            ),
         }
 
     @staticmethod
@@ -107,7 +163,7 @@ class BibliotecasTransformer(DataTransformer):
             "correo_electronico": row["12_correo_electronico"],
             "whatsapp": row["17_whatsapp"],
             "dias_atencion": row["21_dias_atencion"],
-            "enlace_fotos": row["22_enlace_fotos"]
+            "enlace_fotos": row["22_enlace_fotos"],
         }
 
     @staticmethod
@@ -117,7 +173,7 @@ class BibliotecasTransformer(DataTransformer):
             "latitud": a_float(row["7_latitud"]),
             "longitud": a_float(row["8_longitud"]),
             "barrio": row["10_barrio"],
-            "direccion": row["6_direccion"]
+            "direccion": row["6_direccion"],
         }
 
     @staticmethod
@@ -129,7 +185,7 @@ class BibliotecasTransformer(DataTransformer):
             "instagram": row["15_instagram"],
             "enlace_instagram": row["16_enlace_instagram"],
             "youtube": row["18_youtube"],
-            "enlace_youtube": row["19_enlace_youtube"]
+            "enlace_youtube": row["19_enlace_youtube"],
         }
 
     @staticmethod
@@ -138,7 +194,7 @@ class BibliotecasTransformer(DataTransformer):
         return {
             "inventario": a_bool(row["23_inventario"]),
             "cantidad_inventario": a_int(row["24_cantidad_inventario"]),
-            "coleccion": row["25_coleccion"]
+            "coleccion": row["25_coleccion"],
         }
 
     @staticmethod
@@ -146,13 +202,15 @@ class BibliotecasTransformer(DataTransformer):
         """Transform catalog-specific fields."""
         return {
             "catalogo": a_bool(row["27_catalogo"]),
-            "quiere_catalogo": a_bool(row["28_quiere_catalogo"])
+            "quiere_catalogo": a_bool(row["28_quiere_catalogo"]),
         }
 
     @staticmethod
     def _transform_tipos(row: Dict, tipos: List[str], prefix: str) -> List[Dict]:
         """Transform type-specific fields with common prefix."""
-        return [{"nombre": tipo} for tipo in tipos if a_bool(row.get(f"{prefix}{tipo}"))]
+        return [
+            {"nombre": tipo} for tipo in tipos if a_bool(row.get(f"{prefix}{tipo}"))
+        ]
 
     @staticmethod
     def validate_data(row: Dict) -> bool:

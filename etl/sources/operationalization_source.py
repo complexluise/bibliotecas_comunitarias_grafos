@@ -15,8 +15,7 @@ class OperationalizationDataSource:
 class OperationalizationSource(DataSource):
     def __init__(self, neo4j_config: Neo4JConfig, survey_path: str):
         self.driver = GraphDatabase.driver(
-            neo4j_config.uri,
-            auth=(neo4j_config.user, neo4j_config.password)
+            neo4j_config.uri, auth=(neo4j_config.user, neo4j_config.password)
         )
         self.survey_path = survey_path
 
@@ -25,7 +24,5 @@ class OperationalizationSource(DataSource):
         bibliotecas_id = df_encuestas["BibliotecaID"].unique()
 
         return OperationalizationDataSource(
-            df_encuestas=df_encuestas,
-            bibliotecas_id=bibliotecas_id,
-            driver=self.driver
+            df_encuestas=df_encuestas, bibliotecas_id=bibliotecas_id, driver=self.driver
         )

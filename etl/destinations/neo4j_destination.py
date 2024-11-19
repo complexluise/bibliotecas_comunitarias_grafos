@@ -3,6 +3,7 @@ from neo4j import GraphDatabase
 from etl.core.base import DataDestination
 from etl.utils.models import Neo4JConfig
 
+
 class Neo4jDestination(DataDestination):
     def __init__(self, config: Neo4JConfig):
         self.uri = config.uri
@@ -14,8 +15,7 @@ class Neo4jDestination(DataDestination):
     def driver(self):
         if self._driver is None:
             self._driver = GraphDatabase.driver(
-                self.uri,
-                auth=(self.username, self.password)
+                self.uri, auth=(self.username, self.password)
             )
         return self._driver
 
@@ -38,7 +38,9 @@ class Neo4jDestination(DataDestination):
             if isinstance(node_data, dict):
                 Neo4jDestination._create_node(tx, node_type, node_data)
             elif isinstance(node_data, list):
-                Neo4jDestination._create_relationships(tx, node_type, node_data, record.get('id'))
+                Neo4jDestination._create_relationships(
+                    tx, node_type, node_data, record.get("id")
+                )
 
     @staticmethod
     def _create_node(tx, node_type: str, properties: Dict):
@@ -49,11 +51,13 @@ class Neo4jDestination(DataDestination):
         tx.run(query, properties=properties)
 
     @staticmethod
-    def _create_relationships(tx, relationship_type: str, related_nodes: List, source_id: str):
+    def _create_relationships(
+        tx, relationship_type: str, related_nodes: List, source_id: str
+    ):
         query = f"""
         MATCH (source {{id: $source_id}})
         MERGE (target:{relationship_type} {{name: $target_name}})
         MERGE (source)-[r:{relationship_type}]->(target)
         """
         for node in related_nodes:
-            tx.run(query, source_id=source_id, target_name=node.get('name'))
+            tx.run(query, source_id=source_id, target_name=node.get("name"))

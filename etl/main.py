@@ -1,6 +1,8 @@
 from etl.destinations.csv_destination import CSVDestination
 from etl.sources.operationalization_source import OperationalizationSource
-from etl.transformers.operationalization_transformer import OperationalizationTransformer
+from etl.transformers.operationalization_transformer import (
+    OperationalizationTransformer,
+)
 from etl.utils.utils import setup_logger
 from etl.utils.models import Neo4JConfig
 from etl.core.pipeline import ETLPipeline
@@ -10,6 +12,7 @@ from etl.destinations.neo4j_destination import Neo4jDestination
 from etl.transformers.bibliotecas_transformer import BibliotecasTransformer
 
 registrador = setup_logger("etl_main.log")
+
 
 def process_knowledge_graph(config: Neo4JConfig):
     pipeline = ETLPipeline(
@@ -22,19 +25,24 @@ def process_knowledge_graph(config: Neo4JConfig):
     pipeline.add_observer(ETLObserver())
     pipeline.execute()
 
+
 def process_operationalization(config: Neo4JConfig):
     pipeline = ETLPipeline(
-        source=OperationalizationSource(config, "data/Contacto Bibliotecas - Formulario Coordenadas.csv"),
+        source=OperationalizationSource(
+            config, "data/Contacto Bibliotecas - Formulario Coordenadas.csv"
+        ),
         transformer=OperationalizationTransformer(),
-        destination=CSVDestination("output/analysis_results.csv")
+        destination=CSVDestination("output/analysis_results.csv"),
     )
     pipeline.add_observer(ETLObserver())
     pipeline.execute()
+
 
 def main():
     config = Neo4JConfig()
     process_knowledge_graph(config)
     process_operationalization(config)
+
 
 if __name__ == "__main__":
     main()
