@@ -3,15 +3,12 @@ from etl.sources.operationalization_source import OperationalizationSource
 from etl.transformers.operationalization_transformer import (
     OperationalizationTransformer,
 )
-from etl.utils.utils import setup_logger
 from etl.utils.models import Neo4JConfig
 from etl.core.pipeline import ETLPipeline
 from etl.core.observer import ETLObserver
 from etl.sources.csv_source import CSVDataSource
 from etl.destinations.neo4j_destination import Neo4jDestination
 from etl.transformers.bibliotecas_transformer import BibliotecasTransformer
-
-registrador = setup_logger("etl_main.log")
 
 
 def process_knowledge_graph(config: Neo4JConfig):
