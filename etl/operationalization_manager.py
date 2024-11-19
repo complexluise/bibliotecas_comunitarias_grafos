@@ -78,7 +78,7 @@ class OperationalizationManager:
 def main():
     db_config = Neo4JConfig()
     analyzer = OperationalizationManager(
-        db_config, "../../data/Contacto Bibliotecas - Formulario Coordenadas.csv"
+        db_config, "../data/Contacto Bibliotecas - Formulario Coordenadas.csv"
     )
 
     coordinates_config = {
