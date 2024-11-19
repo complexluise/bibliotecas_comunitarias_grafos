@@ -45,7 +45,7 @@ class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "tipo_catalogo"]]
+        return self.df_encuestas[["BibliotecaID", "catalogo_digitalización"]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -56,7 +56,7 @@ class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
             "Catálogo en hoja de cálculo": 2,
             "Software Bibliográfico": 3,
         }
-        data["Puntaje"] = data["tipo_catalogo"].map(catalog_scores)
+        data["Puntaje"] = data["catalogo_digitalización"].map(catalog_scores)
         return data
 
 
