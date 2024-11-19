@@ -99,8 +99,11 @@ class BibliotecasTransformer(DataTransformer):
             List[Dict]: Transformed data ready for Neo4j import
         """
         transformed_data = []
+        data = data[1:]  # Skip the header row
 
         for row in data:
+            # TODO drop rows with missing values
+
             try:
                 if self.validate_data(row):
                     transformed_row = self._transform_row(row)
