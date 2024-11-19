@@ -195,7 +195,7 @@ class BibliotecasTransformer(DataTransformer):
         """Transform collection-specific fields."""
         return {
             "inventario": a_bool(row["23_inventario"]),
-            "cantidad_inventario": a_int(row["24_cantidad_inventario"]),
+            "cantidad_inventario": row["24_cantidad_inventario"],
             "coleccion": row["25_coleccion"],
         }
 
