@@ -2,15 +2,9 @@ from etl.utils.utils import extract_csv, setup_logger
 from etl.neo4j_import_db_SiBiBo import crear_objetos_neo4j, cargar_datos_en_neo4j
 from etl.utils.models import Neo4JConfig
 
-# Configuraciones y Constantes
-CONFIGURACION_NEO4J = {
-    "uri": "bolt://localhost:7687",
-    "usuario": "neo4j",
-    "contraseña": "password"
-}
 
 registrador = setup_logger("etl_main.log")
-
+config = Neo4JConfig()
 
 class ProcesoETL:
     """
@@ -68,9 +62,9 @@ class ProcesoETL:
         """
         registrador.info("Iniciando carga de datos en Neo4j")
         cargar_datos_en_neo4j(
-            uri=self.configuracion_neo4j["uri"],
-            usuario=self.configuracion_neo4j["usuario"],
-            contraseña=self.configuracion_neo4j["contraseña"],
+            uri=self.configuracion_neo4j.uri,
+            usuario=self.configuracion_neo4j.user,
+            contraseña=self.configuracion_neo4j.password,
             datos=datos_transformados
         )
 
@@ -84,7 +78,7 @@ def principal():
     """
     ruta_archivo_csv = '../data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'
 
-    etl = ProcesoETL(CONFIGURACION_NEO4J)
+    etl = ProcesoETL(config)
 
     try:
         # Extraer
