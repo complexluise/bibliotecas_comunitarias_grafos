@@ -2,7 +2,7 @@ import csv
 import logging
 from neo4j import GraphDatabase
 from datetime import datetime
-from utils import Neo4JQueryManager
+from etl.utils.query_manager import Neo4JQueryManager
 
 # Configure logging
 logging.basicConfig(
