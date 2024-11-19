@@ -70,6 +70,12 @@ def process_operationalization(config: Neo4JConfig):
 def cli():
     """CLI tool for processing Bibliotecas Comunitarias data.
 
+    This tool processes and analyzes community libraries in Bogotá through:
+    - Knowledge Graph Construction: Models libraries and their key relationships in Neo4j
+    - Multidimensional Analysis: Evaluates digitization levels, collections, and technology adoption
+    - Data Export: Generates CSV with processed data
+
+
     Usage:
         # Process both knowledge graph and operationalization
         python -m etl.cli process-all --input-libraries data/libraries.csv --input-coords data/coordinates.csv --output output/results.csv
@@ -146,7 +152,6 @@ def operationalization(neo4j_uri, neo4j_user, neo4j_password, output):
         neo4j_uri (str): URI for Neo4j connection
         neo4j_user (str): Neo4j username
         neo4j_password (str): Neo4j password
-        input_coords (str): Path to coordinates CSV file
         output (str): Path to output CSV file
     """
     config = Neo4JConfig(uri=neo4j_uri, user=neo4j_user, password=neo4j_password)
