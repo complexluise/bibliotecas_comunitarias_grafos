@@ -12,5 +12,5 @@ class Neo4jDestination(DataDestination):
             uri=self.config.uri,
             usuario=self.config.user,
             contraseña=self.config.password,
-            datos=data
+            datos=data,
         )

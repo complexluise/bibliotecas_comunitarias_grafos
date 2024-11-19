@@ -38,5 +38,5 @@ class BibliotecasTransformer(DataTransformer):
         Returns:
             bool: True if data is valid, False otherwise
         """
-        required_fields = ['nombre_biblioteca', 'localidad', 'barrio']
+        required_fields = ["nombre_biblioteca", "localidad", "barrio"]
         return all(field in row and row[field] for field in required_fields)

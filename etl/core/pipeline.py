@@ -2,7 +2,12 @@ from etl.core.base import DataSource, DataTransformer, DataDestination
 
 
 class ETLPipeline:
-    def __init__(self, source: DataSource, transformer: DataTransformer, destination: DataDestination):
+    def __init__(
+        self,
+        source: DataSource,
+        transformer: DataTransformer,
+        destination: DataDestination,
+    ):
         self.source = source
         self.transformer = transformer
         self.destination = destination

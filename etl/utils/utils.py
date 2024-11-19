@@ -16,7 +16,7 @@ def setup_logger(log_filename: str) -> logging.Logger:
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
     # File handler
     file_handler = logging.FileHandler(log_filename)
@@ -35,26 +35,25 @@ def setup_logger(log_filename: str) -> logging.Logger:
 def extract_csv(ruta_archivo: str) -> list[dict]:
     logging.info(f"Reading CSV file from: {ruta_archivo}")
     try:
-        with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
+        with open(ruta_archivo, "r", encoding="utf-8") as archivo:
             lector = DictReader(archivo)
             data = list(lector)
             logging.info(f"Successfully read {len(data)} rows from CSV")
             return data
     except Exception as e:
-        logging.error(f"Error reading"
-                      f" CSV file: {str(e)}")
+        logging.error(f"Error reading" f" CSV file: {str(e)}")
         raise
 
 
 def parsear_fecha(cadena_fecha):
     try:
-        return datetime.strptime(cadena_fecha, '%d/%m/%Y').strftime('%Y-%m-%d')
+        return datetime.strptime(cadena_fecha, "%d/%m/%Y").strftime("%Y-%m-%d")
     except ValueError:
         return None
 
 
 def a_bool(valor):
-    return valor.lower() in ('sí', 'si', 'yes', 'true', '1')
+    return valor.lower() in ("sí", "si", "yes", "true", "1")
 
 
 def a_float(valor):

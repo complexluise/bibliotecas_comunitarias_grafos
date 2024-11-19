@@ -14,9 +14,10 @@ def main():
 
     bibliotecas_pipeline = ETLPipeline(
         source=CSVDataSource(
-            'data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv'),
+            "data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv"
+        ),
         transformer=BibliotecasTransformer(),
-        destination=Neo4jDestination(config)
+        destination=Neo4jDestination(config),
     )
 
     bibliotecas_pipeline.add_observer(ETLObserver())

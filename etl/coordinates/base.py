@@ -3,7 +3,9 @@ from pandas import DataFrame
 
 
 class AnalysisCoordinate(ABC):
-    def __init__(self, driver=None, df_encuestas=None, name: str = '', description: str = ''):
+    def __init__(
+        self, driver=None, df_encuestas=None, name: str = "", description: str = ""
+    ):
         self.driver = driver
         self.df_encuestas = df_encuestas
         self.category = None

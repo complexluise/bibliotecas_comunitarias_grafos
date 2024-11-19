@@ -10,8 +10,8 @@ _component_func = components.declare_component(
 
 def st_google_signin(client_id):
     encoded_token = _component_func(
-        client_id=client_id, 
-        default=None, 
+        client_id=client_id,
+        default=None,
         key=client_id,
     )
 

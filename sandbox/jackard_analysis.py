@@ -46,12 +46,12 @@ def fetch_bibliotecas_data(conn):
 
 
 # --- 3. Normalización de los datos ---
-def normalize_data(df, method='minmax'):
-    features = df.select_dtypes(include=['float64', 'int64']).columns
+def normalize_data(df, method="minmax"):
+    features = df.select_dtypes(include=["float64", "int64"]).columns
 
-    if method == 'minmax':
+    if method == "minmax":
         scaler = MinMaxScaler()
-    elif method == 'standard':
+    elif method == "standard":
         scaler = StandardScaler()
 
     df[features] = scaler.fit_transform(df[features])
@@ -69,7 +69,7 @@ def calculate_jaccard(df):
     for i in range(len(binary_df)):
         row_similarities = []
         for j in range(len(binary_df)):
-            sim = jaccard_score(binary_df.iloc[i], binary_df.iloc[j], average='macro')
+            sim = jaccard_score(binary_df.iloc[i], binary_df.iloc[j], average="macro")
             row_similarities.append(sim)
         jaccard_similarities.append(row_similarities)
 
@@ -89,7 +89,8 @@ def main():
     conn = Neo4jConnection(
         uri=os.getenv("NEO4J_URI"),
         user=os.getenv("NEO4J_USER"),
-        password=os.getenv("NEO4J_PASSWORD"))
+        password=os.getenv("NEO4J_PASSWORD"),
+    )
 
     # Obtener datos de las bibliotecas
     df_bibliotecas = fetch_bibliotecas_data(conn)
@@ -97,9 +98,9 @@ def main():
     print(df_bibliotecas.head())
 
     # Normalizar los datos (se puede cambiar el método a 'standard' si es necesario)
-    #df_normalized = normalize_data(df_bibliotecas.copy(), method='minmax')
-    #print("\nDatos normalizados:")
-    #print(df_normalized.head())
+    # df_normalized = normalize_data(df_bibliotecas.copy(), method='minmax')
+    # print("\nDatos normalizados:")
+    # print(df_normalized.head())
 
     # Calcular la similitud de Jaccard
     jaccard_similarities = calculate_jaccard(df_bibliotecas)
@@ -108,10 +109,10 @@ def main():
 
     # Realizar clustering
     clusters = cluster_bibliotecas(jaccard_similarities, num_clusters=3)
-    df_bibliotecas['Cluster'] = clusters
+    df_bibliotecas["Cluster"] = clusters
 
     print("\nBibliotecas agrupadas en clusters:")
-    print(df_bibliotecas[['BibliotecaID', 'Nombre', 'Cluster']])
+    print(df_bibliotecas[["BibliotecaID", "Nombre", "Cluster"]])
 
     # Cerrar conexión
     conn.close()
