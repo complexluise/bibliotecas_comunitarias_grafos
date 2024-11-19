@@ -2,16 +2,12 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from etl.destinations.csv_destination import CSVDestination
-from etl.sources.operationalization_source import OperationalizationSource
-from etl.transformers.operationalization_transformer import OperationalizationTransformer
-from etl.utils.utils import setup_logger
-from etl.utils.models import Neo4JConfig
-from etl.core.pipeline import ETLPipeline
-from etl.core.observer import ETLObserver
-from etl.sources.csv_source import CSVDataSource
-from etl.destinations.neo4j_destination import Neo4jDestination
-from etl.transformers.bibliotecas_transformer import BibliotecasTransformer
+
+from etl.core import ETLPipeline, ETLObserver
+from etl.destinations import BibliotecaNeo4jDestination, CSVDestination
+from etl.sources import OperationalizationSource, CSVDataSource
+from etl.transformers import BibliotecasTransformer, OperationalizationTransformer
+from etl.utils import setup_logger, Neo4JConfig
 
 console = Console()
 registrador = setup_logger("etl_main.log")
@@ -46,7 +42,7 @@ def process_knowledge_graph(config: Neo4JConfig, input_libraries: str):
             input_libraries
         ),
         transformer=BibliotecasTransformer(),
-        destination=Neo4jDestination(config),
+        destination=BibliotecaNeo4jDestination(config),
     )
     pipeline.add_observer(ETLObserver())
     pipeline.execute()
