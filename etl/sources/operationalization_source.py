@@ -1,4 +1,4 @@
-from etl.core.source import Source
+from etl.core.base import DataSource
 from etl.utils.models import Neo4JConfig
 from neo4j import GraphDatabase
 import pandas as pd
@@ -6,13 +6,13 @@ from dataclasses import dataclass
 
 
 @dataclass
-class OperationalizationData:
+class OperationalizationDataSource:
     df_encuestas: pd.DataFrame
     bibliotecas_id: list
     driver: GraphDatabase.driver
 
 
-class OperationalizationSource(Source):
+class OperationalizationSource(DataSource):
     def __init__(self, neo4j_config: Neo4JConfig, survey_path: str):
         self.driver = GraphDatabase.driver(
             neo4j_config.uri,
@@ -20,11 +20,11 @@ class OperationalizationSource(Source):
         )
         self.survey_path = survey_path
 
-    def extract(self) -> OperationalizationData:
+    def extract(self) -> OperationalizationDataSource:
         df_encuestas = pd.read_csv(self.survey_path)
         bibliotecas_id = df_encuestas["BibliotecaID"].unique()
 
-        return OperationalizationData(
+        return OperationalizationDataSource(
             df_encuestas=df_encuestas,
             bibliotecas_id=bibliotecas_id,
             driver=self.driver
