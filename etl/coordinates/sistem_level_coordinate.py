@@ -23,7 +23,8 @@ class SistemasClasificacionCoordinate(AnalysisCoordinate):
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         data[self.column_name] = data[self.column_name].apply(
-            lambda x: 1 if notnull(x) and x.strip().lower() != "no" else 0
+            lambda x: 0 if not notnull(x) or "no usamos" in x.strip().lower()
+            else len([system for system in x.split(",") if "usamos" in system.strip().lower()])
         )
         return data
 
@@ -144,7 +145,7 @@ class SistematizacionPrestamoExternoCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Sistematización en préstamo externo",
-            column_name="sistematizacion_prestamo_externo",
+            column_name="sistematización_prestamo_externo",
             description="Nivel de sistematización en el proceso de préstamo de la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
