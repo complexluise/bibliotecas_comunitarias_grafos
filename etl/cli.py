@@ -17,11 +17,13 @@ console = Console()
 registrador = setup_logger("etl_main.log")
 
 
-def process_with_progress(func):
+def process_with_progress(func, *args, **kwargs):
     """Executes a function with a progress indicator.
 
     Args:
         func (callable): The function to execute with progress tracking.
+        *args: Positional arguments to pass to the function
+        **kwargs: Keyword arguments to pass to the function
     """
     with Progress(
             SpinnerColumn(),
@@ -29,7 +31,7 @@ def process_with_progress(func):
             console=console,
     ) as progress:
         progress.add_task(description=f"Processing {func.__name__}...", total=None)
-        func()
+        func(*args, **kwargs)
 
 
 def process_knowledge_graph(config: Neo4JConfig, input_libraries: str):
@@ -110,10 +112,10 @@ def process_all(input_libraries, input_coords, output):
 
     with console.status("[bold green]Processing data...") as status:
         console.print("[bold blue]Starting knowledge graph processing...")
-        process_with_progress(lambda: process_knowledge_graph(config, input_libraries))
+        process_with_progress(process_knowledge_graph, config, input_libraries)
 
         console.print("[bold blue]Starting operationalization processing...")
-        process_with_progress(lambda: process_operationalization(config, input_coords, output))
+        process_with_progress(process_operationalization, config, input_coords, output)
 
     console.print("[bold green]✨ All processing completed successfully!")
 
@@ -126,7 +128,7 @@ def knowledge_graph(input_libraries):
         input_libraries (str): Path to libraries CSV file
     """
     config = Neo4JConfig()
-    process_with_progress(lambda: process_knowledge_graph(config, input_libraries))
+    process_with_progress(process_knowledge_graph, config, input_libraries)
     console.print("[bold green]✨ Knowledge graph processing completed!")
 
 @cli.command()
@@ -138,7 +140,7 @@ def operationalization(output):
         output (str): Path to output CSV file
     """
     config = Neo4JConfig()
-    process_with_progress(lambda: process_operationalization(config, output))
+    process_with_progress(process_operationalization, config, output)
     console.print("[bold green]✨ Operationalization processing completed!")
 
 
