@@ -4,12 +4,13 @@ from pandas import DataFrame
 
 class AnalysisCoordinate(ABC):
     def __init__(
-        self, driver=None, df_encuestas=None, name: str = "", description: str = ""
+        self, driver=None, df_encuestas=None, name: str = "", column_name: str = "", description: str = ""
     ):
         self.driver = driver
         self.df_encuestas = df_encuestas
         self.category = None
         self.name = name
+        self.column_name = column_name
         self.description = description
         self.score = None
 

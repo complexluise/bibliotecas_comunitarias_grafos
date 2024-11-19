@@ -11,17 +11,18 @@ class SistemasClasificacionCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Sistemas de clasificación",
+            column_name="sistemas_clasificacion",
             description="Sistemas usados para la organización de las colecciones",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "sistemas_clasificacion"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data["Puntaje"] = data["sistemas_clasificacion"].apply(
+        data[self.column_name] = data[self.column_name].apply(
             lambda x: 1 if notnull(x) and x.strip().lower() != "no" else 0
         )
         return data
@@ -33,12 +34,13 @@ class NivelDetalleOrganizacionColeccionCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Nivel de detalle en la organización de la colección",
+            column_name="nivel_detalle_organizacion_coleccion",
             description="Nivel de organización de la colección en la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "nivel_orden_coleccion"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -51,7 +53,7 @@ class NivelDetalleOrganizacionColeccionCoordinate(AnalysisCoordinate):
             "Clasificación con códigos simples en cada libro.": 4,
             "Sistema detallado de clasificación y catálogo completo.": 5,
         }
-        data["Puntaje"] = data["nivel_orden_coleccion"].map(nivel_orden_scores)
+        data[self.column_name] = data[self.column_name].map(nivel_orden_scores)
         return data
 
 
@@ -61,12 +63,13 @@ class TiempoBusquedaLibroCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Tiempo que le toma hallar un libro",
+            column_name="tiempo_busqueda_libro",
             description="Tiempo que toma encontrar un libro en la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "tiempo_busqueda_libro"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -77,7 +80,7 @@ class TiempoBusquedaLibroCoordinate(AnalysisCoordinate):
             "10 minutos.": 2,
             "5 minutos.": 3,
         }
-        data["Puntaje"] = data["tiempo_busqueda_libro"].map(tiempo_busqueda_scores)
+        data[self.column_name] = data[self.column_name].map(tiempo_busqueda_scores)
         return data
 
 
@@ -87,12 +90,13 @@ class SistemaRegistroUsuariosCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Sistema de registro de usuarios",
+            column_name="sistema_registro_usuarios",
             description="Sistema de registro de usuarios de la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "sistema_registro_usuarios"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -103,7 +107,7 @@ class SistemaRegistroUsuariosCoordinate(AnalysisCoordinate):
             "Registro en hojas de cálculo.": 2,
             "Registro en software bibliográfico.": 3,
         }
-        data["Puntaje"] = data["sistema_registro_usuarios"].map(
+        data[self.column_name] = data[self.column_name].map(
             registro_usuarios_scores
         )
         return data
@@ -115,12 +119,13 @@ class ReglamentoServiciosCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Reglamento de servicios",
+            column_name="reglamento_servicios",
             description="Reglamento de servicios de la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "reglamento_servicios"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -131,7 +136,7 @@ class ReglamentoServiciosCoordinate(AnalysisCoordinate):
             "Reglamento aprobado internamente.": 2,
             "Reglamento difundido a los usuarios.": 3,
         }
-        data["Puntaje"] = data["reglamento_servicios"].map(reglamento_servicios_scores)
+        data[self.column_name] = data[self.column_name].map(reglamento_servicios_scores)
         return data
 
 
@@ -141,12 +146,13 @@ class SistematizacionPrestamoExternoCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Sistematización en préstamo externo",
+            column_name="sistematizacion_prestamo_externo",
             description="Nivel de sistematización en el proceso de préstamo de la biblioteca",
         )
         self.category = AnalysisCategory.SISTEMATIZACION_SERVICIOS.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "sistematizacion_prestamo_externo"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -158,7 +164,7 @@ class SistematizacionPrestamoExternoCoordinate(AnalysisCoordinate):
             "Registro hoja de cálculo.": 3,
             "Registro en software bibliográfico.": 4,
         }
-        data["Puntaje"] = data["sistematizacion_prestamo_externo"].map(
+        data[self.column_name] = data[self.column_name].map(
             prestamo_externo_scores
         )
         return data

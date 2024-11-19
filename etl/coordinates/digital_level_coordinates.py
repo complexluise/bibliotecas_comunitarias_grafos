@@ -11,6 +11,7 @@ class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
         super().__init__(
             driver,
             name="Infraestructura tecnológica",
+            column_name="infraestructura_tecnologica",
             description="Disponibilidad de internet y computador en la biblioteca",
         )
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
@@ -23,7 +24,7 @@ class InfraestructuraTecnologicaCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data["Puntaje"] = data.apply(
+        data[self.column_name] = data.apply(
             lambda row: (
                 2
                 if row["tieneComputador"] and row["tieneConectividad"]
@@ -40,12 +41,13 @@ class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Estado de la digitalización del catálogo",
+            column_name="catalogo_digitalización",
             description="Nivel de desarrollo en la digitalización del catálogo bibliográfico",
         )
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "catalogo_digitalización"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -56,7 +58,7 @@ class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
             "Catálogo en hoja de cálculo": 2,
             "Software Bibliográfico": 3,
         }
-        data["Puntaje"] = data["catalogo_digitalización"].map(catalog_scores)
+        data[self.column_name] = data[self.column_name].map(catalog_scores)
         return data
 
 
@@ -66,17 +68,18 @@ class PorcentajeColeccionCatalogoCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="% Colección ingresada al catalogo",
+            column_name="porcentaje_coleccion_catalogada",
             description="Porcentaje de la colección bibliográfica que ha sido catalogada aproximadamente",
         )
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "porcentaje_coleccion_catalogada"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data["Puntaje"] = data["porcentaje_coleccion_catalogada"]
+        data[self.column_name] = data[self.column_name]
         return data
 
 
@@ -86,12 +89,13 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
             driver,
             df_encuestas,
             name="Nivel de información capturada en el catálogo",
+            column_name="nivel_detalle_catalogo",
             description="Detalle de la información capturada en el catálogo",
         )
         self.category = AnalysisCategory.CATALOGO_DIGITALIZACION.value
 
     def get_data(self) -> DataFrame:
-        return self.df_encuestas[["BibliotecaID", "nivel_detalle_catalogo"]]
+        return self.df_encuestas[["BibliotecaID", self.column_name]]
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
@@ -102,5 +106,5 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
             "Sistemas de Clasificación": 2,
             "Estado de disponibilidad de los materiales": 3,
         }
-        data["Puntaje"] = data["nivel_detalle_catalogo"].map(detail_scores)
+        data[self.column_name] = data[self.column_name].map(detail_scores)
         return data
