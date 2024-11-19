@@ -76,41 +76,43 @@ pip install -r requirements.txt
 
 ### Configuración
 
-- **Credenciales de Neo4j**: Configura las variables de entorno.
-- **Archivos CSV en `data/`**:
-  - `libraries.csv` (Base de datos de bibliotecas comunitarias).
-  - `coordinates.csv` (Respuestas formulario con coordenadas).
+1. **Variables de Entorno**:
+   Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+```plaintext
+NEO4J_URI=bolt://localhost:7687 
+NEO4J_USER=neo4j 
+NEO4J_PASSWORD=tu_contraseña
+```
 
----
+2. **Archivos CSV en `data/`**:
+- `libraries.csv` (Base de datos de bibliotecas comunitarias)
+- `coordinates.csv` (Respuestas formulario con coordenadas)
 
-## 🛠️ Uso
+## 🛠️ Uso del CLI
 
-### 1. Preparar los datos
+El CLI (Command Line Interface) proporciona una interfaz amigable para ejecutar los procesos ETL:
 
-Coloca los archivos CSV requeridos en la carpeta `data/`:
+### Comandos Disponibles:
 
-
-### 2. Ejecutar el CLI
-
-El sistema ofrece tres comandos principales:
-
-#### a) Procesar todo el pipeline
-
+1. **Procesar Todo el Pipeline**:
 ```bash
 python -m etl process-all --input-libraries "data/libraries.csv" --input-coords "data/coordinates.csv" --output "output/results.csv"
 ```
+Este comando ejecuta tanto la construcción del grafo como el análisis de operacionalización.
 
 #### b) Procesar solo el grafo de conocimiento
 
 ```bash
 python -m etl knowledge-graph --input-libraries "data/libraries.csv"
 ```
+Construye únicamente el grafo de conocimiento en Neo4j.
 
 #### c) Procesar solo la operacionalización
 
 ```bash
 python -m etl operationalization --output "output/results.csv"
 ```
+Genera el análisis de operacionalización y exporta los resultados.
 
 ### Opciones comunes
 
