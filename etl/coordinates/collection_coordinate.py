@@ -1,7 +1,7 @@
 from etl.coordinates.base import AnalysisCoordinate
 from etl.utils.constants import AnalysisCategory
 from etl.graph_db.query_manager import Neo4JQueryManager
-from pandas import DataFrame
+from pandas import DataFrame, notnull
 
 
 class DiversidadColeccionesCoordinate(AnalysisCoordinate):
@@ -87,7 +87,7 @@ class EnfoquesColeccionesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data['num_enfoques'] = data['especificidad_topicos'].apply(lambda x: len(x.split(',')) if pd.notnull(x) else 0)
+        data['num_enfoques'] = data['especificidad_topicos'].apply(lambda x: len(x.split(',')) if notnull(x) else 0)
         data['Puntaje'] = data['num_enfoques'].apply(lambda x: 3 if x == 1 else (2 if x <= 3 else 1))
         return data
 
@@ -104,7 +104,7 @@ class ActividadesMediacionColeccionCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data['Puntaje'] = data['actividades_mediacion'].apply(lambda x: 1 if pd.notnull(x) and x.strip() != '' else 0)
+        data['Puntaje'] = data['actividades_mediacion'].apply(lambda x: 1 if notnull(x) and x.strip() != '' else 0)
         return data
 
 
