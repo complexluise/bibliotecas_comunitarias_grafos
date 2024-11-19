@@ -1,2 +1,2 @@
-from bibliotecas_transformer import BibliotecasTransformer
-from operationalization_transformer import OperationalizationTransformer
+from etl.transformers.bibliotecas_transformer import BibliotecasTransformer
+from etl.transformers.operationalization_transformer import OperationalizationTransformer

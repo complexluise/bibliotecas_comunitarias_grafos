@@ -1,3 +1,3 @@
-from base import DataSource, DataTransformer, DataDestination
-from observer import ETLObserver
-from pipeline import ETLPipeline
+from etl.core.base import DataSource, DataTransformer, DataDestination
+from etl.core.observer import ETLObserver
+from etl.core.pipeline import ETLPipeline

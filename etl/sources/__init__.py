@@ -1,2 +1,2 @@
-from csv_source import CSVDataSource
-from operationalization_source import OperationalizationSource
+from etl.sources.csv_source import CSVDataSource
+from etl.sources.operationalization_source import OperationalizationSource
