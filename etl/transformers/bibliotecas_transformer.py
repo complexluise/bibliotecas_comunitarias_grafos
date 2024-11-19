@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict
 from dataclasses import dataclass
 from logging import getLogger
 from etl.core.base import DataTransformer
