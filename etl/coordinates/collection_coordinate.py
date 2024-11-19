@@ -22,7 +22,7 @@ class DiversidadColeccionesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data[self.column_name] = data["tipos_coleccion"].apply(lambda x: len(x))
+        data[self.column_name] = data["tipos_coleccion"].apply(lambda x: len(x))  # TODO normalizar los valores
         return data
 
 
@@ -31,33 +31,29 @@ class CantidadMaterialBibliograficoCoordinate(AnalysisCoordinate):
         super().__init__(
             driver,
             name="Cantidad de Material Bibliográfico",
-            column_name="cantidad_material_bibliografico",
+            column_name="cantidad_inventario",
             description="Número total de material bibliográfico en la colección",
         )
         self.category = AnalysisCategory.COLECCION_CARACTERIZACION.value
 
     def get_data(self) -> DataFrame:
         with self.driver.session() as session:
-            result = session.run(Neo4JQueryManager.cantidad_material_bibliografico())
+            result = session.run(Neo4JQueryManager.cantidad_inventario())
             return DataFrame(result.data())
 
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
 
-        def get_score(cantidad):
-            if cantidad is None:
-                return None
-            if cantidad < 500:
-                return 0
-            elif 500 <= cantidad < 1000:
-                return 1
-            elif 1000 <= cantidad < 3000:
-                return 2
-            else:
-                return 3
+        cantidad_inventario_scores = {
+            "de 0 a 500 materiales": 0,
+            "de 500 a 1000 materiales": 1,
+            "de 1000 a 3000 materiales": 2,
+            "Más de 3000 materiales": 3
 
-        data[self.column_name] = data["cantidad_inventario"].apply(get_score)
+        }
+
+        data[self.column_name] = data["cantidad_inventario"].map(cantidad_inventario_scores)
         return data
 
 
@@ -157,7 +153,7 @@ class FrecuenciaActividadesMediacionCoordinate(AnalysisCoordinate):
         frecuencia_scores = {
             "No aplica.": 0,
             "Rara vez.": 1,
-            "La mayoría de las veces.": 2,
+            "La mayoria de las veces.": 2,  # sin tilde
             "Siempre.": 3,
         }
         data[self.column_name] = data[self.column_name].map(frecuencia_scores)
