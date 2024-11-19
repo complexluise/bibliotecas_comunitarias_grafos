@@ -70,8 +70,15 @@ def process_operationalization(config: Neo4JConfig):
 def cli():
     """CLI tool for processing Bibliotecas Comunitarias data.
 
-    This tool provides commands for processing library data into a knowledge graph
-    and performing operationalization analysis.
+    Usage:
+        # Process both knowledge graph and operationalization
+        python -m etl.cli process-all --input-libraries data/libraries.csv --input-coords data/coordinates.csv --output output/results.csv
+
+        # Process only knowledge graph
+        python -m etl.cli knowledge-graph --input-libraries data/libraries.csv
+
+        # Process only operationalization
+        python -m etl.cli operationalization --input-coords data/coordinates.csv --output output/results.csv
     """
     console.print(
         Panel.fit(
@@ -80,62 +87,70 @@ def cli():
         )
     )
 
-
 @cli.command()
 @click.option('--neo4j-uri', default="bolt://localhost:7687", help="Neo4j URI")
 @click.option('--neo4j-user', default="neo4j", help="Neo4j username")
 @click.option('--neo4j-password', prompt=True, hide_input=True, help="Neo4j password")
-def process_all(neo4j_uri, neo4j_user, neo4j_password):
+@click.option('--input-libraries', required=True, help="Path to libraries CSV file")
+@click.option('--input-coords', required=True, help="Path to coordinates CSV file")
+@click.option('--output', required=True, help="Path to output CSV file")
+def process_all(neo4j_uri, neo4j_user, neo4j_password, input_libraries, input_coords, output):
     """Process both knowledge graph and operationalization data.
 
     Args:
         neo4j_uri (str): URI for Neo4j connection
         neo4j_user (str): Neo4j username
         neo4j_password (str): Neo4j password
+        input_libraries (str): Path to libraries CSV file
+        input_coords (str): Path to coordinates CSV file
+        output (str): Path to output CSV file
     """
     config = Neo4JConfig(uri=neo4j_uri, user=neo4j_user, password=neo4j_password)
 
     with console.status("[bold green]Processing data...") as status:
         console.print("[bold blue]Starting knowledge graph processing...")
-        process_with_progress(lambda: process_knowledge_graph(config))
+        process_with_progress(lambda: process_knowledge_graph(config, input_libraries))
 
         console.print("[bold blue]Starting operationalization processing...")
-        process_with_progress(lambda: process_operationalization(config))
+        process_with_progress(lambda: process_operationalization(config, input_coords, output))
 
     console.print("[bold green]✨ All processing completed successfully!")
-
 
 @cli.command()
 @click.option('--neo4j-uri', default="bolt://localhost:7687", help="Neo4j URI")
 @click.option('--neo4j-user', default="neo4j", help="Neo4j username")
 @click.option('--neo4j-password', prompt=True, hide_input=True, help="Neo4j password")
-def knowledge_graph(neo4j_uri, neo4j_user, neo4j_password):
+@click.option('--input-libraries', required=True, help="Path to libraries CSV file")
+def knowledge_graph(neo4j_uri, neo4j_user, neo4j_password, input_libraries):
     """Process only the knowledge graph data.
 
     Args:
         neo4j_uri (str): URI for Neo4j connection
         neo4j_user (str): Neo4j username
         neo4j_password (str): Neo4j password
+        input_libraries (str): Path to libraries CSV file
     """
     config = Neo4JConfig(uri=neo4j_uri, user=neo4j_user, password=neo4j_password)
-    process_with_progress(lambda: process_knowledge_graph(config))
+    process_with_progress(lambda: process_knowledge_graph(config, input_libraries))
     console.print("[bold green]✨ Knowledge graph processing completed!")
-
 
 @cli.command()
 @click.option('--neo4j-uri', default="bolt://localhost:7687", help="Neo4j URI")
 @click.option('--neo4j-user', default="neo4j", help="Neo4j username")
 @click.option('--neo4j-password', prompt=True, hide_input=True, help="Neo4j password")
-def operationalization(neo4j_uri, neo4j_user, neo4j_password):
+@click.option('--output', required=True, help="Path to output CSV file")
+def operationalization(neo4j_uri, neo4j_user, neo4j_password, output):
     """Process only the operationalization data.
 
     Args:
         neo4j_uri (str): URI for Neo4j connection
         neo4j_user (str): Neo4j username
         neo4j_password (str): Neo4j password
+        input_coords (str): Path to coordinates CSV file
+        output (str): Path to output CSV file
     """
     config = Neo4JConfig(uri=neo4j_uri, user=neo4j_user, password=neo4j_password)
-    process_with_progress(lambda: process_operationalization(config))
+    process_with_progress(lambda: process_operationalization(config, output))
     console.print("[bold green]✨ Operationalization processing completed!")
 
 
