@@ -60,14 +60,40 @@ pip install -r requirements.txt
 
 ## Uso
 
+## Uso
+
 1. **Preparar los datos**:
-   - Asegúrate de que los archivos CSV requeridos están en la carpeta `data/`.
+   - Coloca los archivos CSV requeridos en la carpeta `data/`:
+     - `BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv`
+     - `Contacto Bibliotecas - Formulario Coordenadas.csv`
 
-2. **Ejecutar el pipeline**:
+2. **Ejecutar el CLI**:
 
+   El sistema provee varios comandos a través de su interfaz CLI:
+
+   - Procesar todo el pipeline (grafo y operacionalización):
+     ```bash
+     python -m etl process-all
+     ```
+
+   - Procesar solo el grafo de conocimiento:
+     ```bash
+     python -m etl knowledge-graph
+     ```
+
+   - Procesar solo la operacionalización:
+     ```bash
+     python -m etl operationalization
+     ```
+
+   Opciones disponibles para todos los comandos:
+   - `--neo4j-uri`: URI de conexión a Neo4j (default: "bolt://localhost:7687")
+   - `--neo4j-user`: Usuario de Neo4j (default: "neo4j")
+   - `--neo4j-password`: Contraseña de Neo4j (se solicitará de forma segura)
+
+   Ejemplo con parámetros personalizados:
    ```bash
-   python -m etl process-all
-   ```
+   python -m etl process-all --neo4j-uri "bolt://myserver:7687" --neo4j-user "admin"
 
 3. **Resultados**:
    - **Grafo de conocimiento**: Relaciones entre bibliotecas y sus características.
