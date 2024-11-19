@@ -97,19 +97,19 @@ El sistema ofrece tres comandos principales:
 #### a) Procesar todo el pipeline
 
 ```bash
-python -m etl.cli process-all --input-libraries "data/libraries.csv" --input-coords "data/coordinates.csv" --output "output/results.csv"
+python -m etl process-all --input-libraries "data/libraries.csv" --input-coords "data/coordinates.csv" --output "output/results.csv"
 ```
 
 #### b) Procesar solo el grafo de conocimiento
 
 ```bash
-python -m etl.cli knowledge-graph --input-libraries "data/libraries.csv"
+python -m etl knowledge-graph --input-libraries "data/libraries.csv"
 ```
 
 #### c) Procesar solo la operacionalización
 
 ```bash
-python -m etl.cli operationalization --output "output/results.csv"
+python -m etl operationalization --output "output/results.csv"
 ```
 
 ### Opciones comunes
@@ -126,7 +126,7 @@ python -m etl.cli operationalization --output "output/results.csv"
 #### Ejemplo completo
 
 ```bash
-python -m etl.cli process-all \
+python -m etl process-all \
   --neo4j-uri "bolt://localhost:7687" \
   --neo4j-user "neo4j" \
   --input-libraries "data/libraries.csv" \
