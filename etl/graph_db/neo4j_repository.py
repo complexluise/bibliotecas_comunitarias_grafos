@@ -5,7 +5,7 @@ from etl.utils.utils import setup_logger
 logger = setup_logger("neo4j_repository.log")
 
 
-class Neo4jRepository:
+class Neo4JRepository:
     """
     Repository class to encapsulate Neo4j database interactions.
     """
