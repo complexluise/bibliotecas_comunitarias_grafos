@@ -14,32 +14,32 @@ logger = setup_logger("etl.log", "etl.cli")
 
 
 def process_with_progress(func, *args, **kwargs):
-    """Executes a function with a progress indicator.
+    """Ejecuta una función con un indicador de progreso.
 
     Args:
-        func (callable): The function to execute with progress tracking.
-        *args: Positional arguments to pass to the function
-        **kwargs: Keyword arguments to pass to the function
+        func (callable): La función a ejecutar con seguimiento de progreso.
+        *args: Argumentos posicionales para pasar a la función
+        **kwargs: Argumentos con nombre para pasar a la función
     """
     with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
     ) as progress:
-        progress.add_task(description=f"Processing {func.__name__}...", total=None)
+        progress.add_task(description=f"Procesando  {func.__name__}...", total=None)
         func(*args, **kwargs)
 
 
-def process_knowledge_graph(config: Neo4JConfig, input_libraries: str):
-    """Processes and loads knowledge graph data into Neo4j.
+def process_knowledge_graph(config: Neo4JConfig, library_data_path: str):
+    """Procesa y carga datos del grafo de conocimiento en Neo4j.
 
     Args:
-        config (Neo4JConfig): Configuration object for Neo4j connection.
-        input_libraries (str): Path to the CSV file containing library data.
+        config (Neo4JConfig): Objeto de configuración para la conexión Neo4j.
+        library_data_path (str): Ruta al archivo CSV que contiene datos de bibliotecas.
     """
     pipeline = ETLPipeline(
         source=CSVDataSource(
-            input_libraries
+            library_data_path
         ),
         transformer=BibliotecasTransformer(),
         destination=BibliotecaNeo4jDestination(config),
@@ -48,18 +48,20 @@ def process_knowledge_graph(config: Neo4JConfig, input_libraries: str):
     pipeline.execute()
 
 
-def process_operationalization(config: Neo4JConfig):
-    """Processes operationalization data and exports to CSV.
+def process_operationalization(neo4j_config: Neo4JConfig, survey_data_path: str, output_path: str):
+    """Procesa datos de operacionalización y exporta a CSV.
 
     Args:
-        config (Neo4JConfig): Configuration object for Neo4j connection.
+        neo4j_config (Neo4JConfig): Objeto de configuración para la conexión Neo4j.
+        survey_data_path (str): Ruta al archivo CSV de datos de la encuesta.
+        output_path (str): Ruta para los resultados del análisis.
     """
     pipeline = ETLPipeline(
         source=OperationalizationSource(
-            config, "data/Contacto Bibliotecas - Formulario Coordenadas.csv"
+            neo4j_config, survey_data_path
         ),
         transformer=OperationalizationTransformer(),
-        destination=CSVDestination("output/analysis_results.csv"),
+        destination=CSVDestination(output_path),
     )
     pipeline.add_observer(ETLObserver())
     pipeline.execute()
@@ -67,77 +69,80 @@ def process_operationalization(config: Neo4JConfig):
 
 @click.group()
 def cli():
-    """CLI tool for processing Bibliotecas Comunitarias data.
+    """Herramienta CLI para procesar datos de Bibliotecas Comunitarias.
 
-    This tool processes and analyzes community libraries in Bogotá through:
-    - Knowledge Graph Construction: Models libraries and their key relationships in Neo4j
-    - Multidimensional Analysis: Evaluates digitization levels, collections, and technology adoption
-    - Data Export: Generates CSV with processed data
+    Esta herramienta procesa y analiza bibliotecas comunitarias en Bogotá a través de:
+    - Construcción de Grafo de Conocimiento: Modela bibliotecas y sus relaciones clave en Neo4j
+    - Análisis Multidimensional: Evalúa niveles de digitalización, colecciones y adopción tecnológica
+    - Exportación de Datos: Genera CSV con datos procesados
 
+    Uso:
+        # Procesar grafo de conocimiento y operacionalización
+        python -m etl process-all --library-data data/libraries.csv --survey-data data/survey.csv --analysis-output output/results.csv
 
-    Usage:
-        # Process both knowledge graph and operationalization
-        python -m etl.cli process-all --input-libraries data/libraries.csv --input-coords data/coordinates.csv --output output/results.csv
+        # Procesar solo grafo de conocimiento
+        python -m etl knowledge-graph --library-data data/libraries.csv
 
-        # Process only knowledge graph
-        python -m etl.cli knowledge-graph --input-libraries data/libraries.csv
-
-        # Process only operationalization
-        python -m etl.cli operationalization --input-coords data/coordinates.csv --output output/results.csv
+        # Procesar solo operacionalización
+        python -m etl.cli operationalization --survey-data data/survey.csv --output output/results.csv
     """
     console.print(
         Panel.fit(
-            "🏛️ Bibliotecas Comunitarias Graph Processing Tool",
+            "🏛️ Herramienta de Procesamiento de Grafos para Bibliotecas Comunitarias",
             border_style="blue",
         )
     )
 
 @cli.command()
-@click.option('--input-libraries', required=True, help="Path to libraries CSV file")
-@click.option('--input-coords', required=True, help="Path to coordinates CSV file")
-@click.option('--output', required=True, help="Path to output CSV file")
-def process_all(input_libraries, input_coords, output):
-    """Process both knowledge graph and operationalization data.
+@click.option('--survey-data', required=True, help="Path to libraries survey data CSV file")
+@click.option('--output', required=True, help="Path to output analysis results CSV file")
+def operationalization(survey_data, output):
+    """Procesa los datos de operacionalización de las respuestas de la encuesta.
 
     Args:
-        input_libraries (str): Path to libraries CSV file
-        input_coords (str): Path to coordinates CSV file
-        output (str): Path to output CSV file
+        survey_data (str): Ruta al archivo CSV de datos de la encuesta
+        output (str): Ruta para guardar los resultados del análisis en CSV
     """
-    config = Neo4JConfig()
+    neo4j_config = Neo4JConfig()
+    process_with_progress(process_operationalization, neo4j_config, survey_data, output)
+    console.print("[bold green]✨ ¡Análisis de operacionalización completado!")
 
-    with console.status("[bold green]Processing data...") as status:
-        console.print("[bold blue]Starting knowledge graph processing...")
-        process_with_progress(process_knowledge_graph, config, input_libraries)
-
-        console.print("[bold blue]Starting operationalization processing...")
-        process_with_progress(process_operationalization, config, input_coords, output)
-
-    console.print("[bold green]✨ All processing completed successfully!")
 
 @cli.command()
-@click.option('--input-libraries', required=True, help="Path to libraries CSV file")
-def knowledge_graph(input_libraries):
-    """Process only the knowledge graph data.
+@click.option('--library-data', required=True, help="Path to libraries CSV file")
+def knowledge_graph(library_data):
+    """Procesa solo los datos del grafo de conocimiento.
 
     Args:
-        input_libraries (str): Path to libraries CSV file
+        library_data (str): Ruta al archivo CSV de bibliotecas
     """
     config = Neo4JConfig()
-    process_with_progress(process_knowledge_graph, config, input_libraries)
-    console.print("[bold green]✨ Knowledge graph processing completed!")
+    process_with_progress(process_knowledge_graph, config, library_data)
+    console.print("[bold green]✨ ¡Procesamiento del grafo de conocimiento completado!")
+
 
 @cli.command()
-@click.option('--output', required=True, help="Path to output CSV file")
-def operationalization(output):
-    """Process only the operationalization data.
+@click.option('--library-data', required=True, help="Path to libraries master data CSV file")
+@click.option('--survey-data', required=True, help="Path to libraries survey data CSV file")
+@click.option('--analysis-output', required=True, help="Path to analysis results CSV file")
+def process_all(library_data, survey_data, analysis_output):
+    """Procesa tanto el grafo de conocimiento como el análisis de operacionalización.
 
     Args:
-        output (str): Path to output CSV file
+        library_data (str): Ruta al archivo CSV maestro de bibliotecas
+        survey_data (str): Ruta al archivo CSV de datos de la encuesta
+        analysis_output (str): Ruta para los resultados del análisis
     """
-    config = Neo4JConfig()
-    process_with_progress(process_operationalization, config, output)
-    console.print("[bold green]✨ Operationalization processing completed!")
+    neo4j_config = Neo4JConfig()
+
+    with console.status("[bold green]Procesando datos...") as status:
+        console.print("[bold blue]Iniciando construcción del grafo de conocimiento...")
+        process_with_progress(process_knowledge_graph, neo4j_config, library_data)
+
+        console.print("[bold blue]Iniciando análisis de operacionalización...")
+        process_with_progress(process_operationalization, neo4j_config, survey_data, analysis_output)
+
+    console.print("[bold green]✨ ¡Todo el procesamiento se completó exitosamente!")
 
 
 if __name__ == "__main__":
