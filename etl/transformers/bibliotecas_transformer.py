@@ -1,11 +1,45 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
+from dataclasses import dataclass
+from logging import getLogger
 from etl.core.base import DataTransformer
-from etl.utils.utils import (
-    parsear_fecha,
-    a_float,
-    a_bool,
-    a_int,
-)
+from etl.utils.utils import parsear_fecha, a_float, a_bool, a_int
+
+logger = getLogger(__name__)
+
+
+@dataclass
+class TransformationConfig:
+    TIPOS_COLECCION = [
+        "literatura", "infantiles", "informativos", "texto", "didacticos",
+        "revistas_periodicos", "audiovisuales", "juegos", "digitales",
+        "fanzines", "enfoques", "autoedicion", "otros"
+    ]
+    TIPOS_SERVICIO = [
+        "consulta", "prestamo_externo", "internet", "leo", "culturales",
+        "alfabetizacion", "comunitarios", "otros"
+    ]
+    TIPOS_ACTIVIDAD = [
+        "lectoescritura", "culturales", "formacion", "emprendimientos",
+        "produccion_comunitaria", "medioambientales", "psicosociales",
+        "ciencia", "otros"
+    ]
+    TIPOS_TECNOLOGIA = [
+        "computadores", "impresoras", "tabletas", "proyectores",
+        "smartphones", "ninguno", "otros"
+    ]
+    TIPOS_POBLACION = [
+        "infancias", "jovenes", "mujeres", "adultos_mayores",
+        "migrantes", "otros"
+    ]
+    TIPOS_ALIADOS = [
+        "editoriales", "fundaciones", "colectivos", "casa_cultura",
+        "consejo_cultura", "educativos", "bibliotecas_comunitarias", "otros"
+    ]
+    TIPOS_FINANCIACION = [
+        "autogestion", "estimulos_distrito", "becas",
+        "convocatorias_internacionales", "patrocinios", "otros"
+    ]
+
 
 class BibliotecasTransformer(DataTransformer):
     """
@@ -26,10 +60,99 @@ class BibliotecasTransformer(DataTransformer):
         transformed_data = []
 
         for row in data:
-            transformed_row = self._crear_objetos_neo4j(row)
-            transformed_data.append(transformed_row)
+            try:
+                if self.validate_data(row):
+                    transformed_row = self._transform_row(row)
+                    transformed_data.append(transformed_row)
+                else:
+                    logger.warning(f"Invalid data row: {row.get('nombre_biblioteca', 'unknown')}")
+            except Exception as e:
+                logger.error(f"Error transforming row: {e}")
+                continue
 
         return transformed_data
+
+    def _transform_row(self, row: Dict) -> Dict:
+        """Transform a single data row into Neo4j format."""
+        return {
+            "biblioteca": self._transform_biblioteca(row),
+            "ubicacion": self._transform_ubicacion(row),
+            "localidad": {"nombre": row["9_localidad"]},
+            "redes_sociales": self._transform_redes_sociales(row),
+            "coleccion": self._transform_coleccion(row),
+            "tipos_coleccion": self._transform_tipos(row, TransformationConfig.TIPOS_COLECCION, "26_tipo_coleccion_"),
+            "catalogo": self._transform_catalogo(row),
+            "soporte_catalogo": {"tipo": row["29_soporte_catalogo"]},
+            "tipos_servicio": self._transform_tipos(row, TransformationConfig.TIPOS_SERVICIO, "30_servicios_"),
+            "tipos_actividad": self._transform_tipos(row, TransformationConfig.TIPOS_ACTIVIDAD, "31_actividades_"),
+            "tecnologia": {"conectividad": a_bool(row["32_conectividad"])},
+            "tipos_tecnologia": self._transform_tipos(row, TransformationConfig.TIPOS_TECNOLOGIA, "33_tic_"),
+            "tipos_poblacion": self._transform_tipos(row, TransformationConfig.TIPOS_POBLACION, "34_poblacion_"),
+            "tipos_aliados": self._transform_tipos(row, TransformationConfig.TIPOS_ALIADOS, "35_aliados_"),
+            "tipos_financiacion": self._transform_tipos(row, TransformationConfig.TIPOS_FINANCIACION,
+                                                        "36_fuentes_financiacion_")
+        }
+
+    @staticmethod
+    def _transform_biblioteca(row: Dict) -> Dict:
+        """Transform biblioteca-specific fields."""
+        return {
+            "id": row["2_id"],
+            "nombre": row["3_nombre_organizacion"],
+            "fecha_registro": parsear_fecha(row["1_fecha_registro"]),
+            "estado": row["4_estado"],
+            "inicio_actividades": parsear_fecha(row["20_inicio_actividades"]),
+            "representante": row["5_representante"],
+            "telefono": row["11_telefono"],
+            "correo_electronico": row["12_correo_electronico"],
+            "whatsapp": row["17_whatsapp"],
+            "dias_atencion": row["21_dias_atencion"],
+            "enlace_fotos": row["22_enlace_fotos"]
+        }
+
+    @staticmethod
+    def _transform_ubicacion(row: Dict) -> Dict:
+        """Transform location-specific fields."""
+        return {
+            "latitud": a_float(row["7_latitud"]),
+            "longitud": a_float(row["8_longitud"]),
+            "barrio": row["10_barrio"],
+            "direccion": row["6_direccion"]
+        }
+
+    @staticmethod
+    def _transform_redes_sociales(row: Dict) -> Dict:
+        """Transform social media fields."""
+        return {
+            "facebook": row["13_facebook"],
+            "enlace_facebook": row["14_enlace_facebook"],
+            "instagram": row["15_instagram"],
+            "enlace_instagram": row["16_enlace_instagram"],
+            "youtube": row["18_youtube"],
+            "enlace_youtube": row["19_enlace_youtube"]
+        }
+
+    @staticmethod
+    def _transform_coleccion(row: Dict) -> Dict:
+        """Transform collection-specific fields."""
+        return {
+            "inventario": a_bool(row["23_inventario"]),
+            "cantidad_inventario": a_int(row["24_cantidad_inventario"]),
+            "coleccion": row["25_coleccion"]
+        }
+
+    @staticmethod
+    def _transform_catalogo(row: Dict) -> Dict:
+        """Transform catalog-specific fields."""
+        return {
+            "catalogo": a_bool(row["27_catalogo"]),
+            "quiere_catalogo": a_bool(row["28_quiere_catalogo"])
+        }
+
+    @staticmethod
+    def _transform_tipos(row: Dict, tipos: List[str], prefix: str) -> List[Dict]:
+        """Transform type-specific fields with common prefix."""
+        return [{"nombre": tipo} for tipo in tipos if a_bool(row.get(f"{prefix}{tipo}"))]
 
     @staticmethod
     def validate_data(row: Dict) -> bool:
@@ -42,190 +165,5 @@ class BibliotecasTransformer(DataTransformer):
         Returns:
             bool: True if data is valid, False otherwise
         """
-        required_fields = ["nombre_biblioteca", "localidad", "barrio"]
+        required_fields = ["2_id", "3_nombre_organizacion", "9_localidad", "10_barrio"]
         return all(field in row and row[field] for field in required_fields)
-
-    @staticmethod
-    def crear_objetos_neo4j(fila):
-        # Crear nodo BibliotecaComunitaria
-        biblioteca = {
-            "id": fila["2_id"],
-            "nombre": fila["3_nombre_organizacion"],
-            "fecha_registro": parsear_fecha(fila["1_fecha_registro"]),
-            "estado": fila["4_estado"],
-            "inicio_actividades": parsear_fecha(fila["20_inicio_actividades"]),
-            "representante": fila["5_representante"],
-            "telefono": fila["11_telefono"],
-            "correo_electronico": fila["12_correo_electronico"],
-            "whatsapp": fila["17_whatsapp"],
-            "dias_atencion": fila["21_dias_atencion"],
-            "enlace_fotos": fila["22_enlace_fotos"],
-        }
-
-        # Crear nodo Ubicacion
-        ubicacion = {
-            "latitud": a_float(fila["7_latitud"]),
-            "longitud": a_float(fila["8_longitud"]),
-            "barrio": fila["10_barrio"],
-            "direccion": fila["6_direccion"],
-        }
-
-        # Crear nodo Localidad
-        localidad = {"nombre": fila["9_localidad"]}
-
-        # Crear nodo RedesSociales
-        redes_sociales = {
-            "facebook": fila["13_facebook"],
-            "enlace_facebook": fila["14_enlace_facebook"],
-            "instagram": fila["15_instagram"],
-            "enlace_instagram": fila["16_enlace_instagram"],
-            "youtube": fila["18_youtube"],
-            "enlace_youtube": fila["19_enlace_youtube"],
-        }
-
-        # Crear nodo Coleccion
-        coleccion = {
-            "inventario": a_bool(fila["23_inventario"]),
-            "cantidad_inventario": a_int(fila["24_cantidad_inventario"]),
-            "coleccion": fila["25_coleccion"],
-        }
-
-        # Crear TiposColeccion
-        tipos_coleccion = [
-            "literatura",
-            "infantiles",
-            "informativos",
-            "texto",
-            "didacticos",
-            "revistas_periodicos",
-            "audiovisuales",
-            "juegos",
-            "digitales",
-            "fanzines",
-            "enfoques",
-            "autoedicion",
-            "otros",
-        ]
-        nodos_tipos_coleccion = [
-            {"nombre": tc}
-            for tc in tipos_coleccion
-            if a_bool(fila[f"26_tipo_coleccion_{tc}"])
-        ]
-
-        # Crear nodo Catalogo
-        catalogo = {
-            "catalogo": a_bool(fila["27_catalogo"]),
-            "quiere_catalogo": a_bool(fila["28_quiere_catalogo"]),
-        }
-
-        # Crear nodo SoporteCatalogo
-        soporte_catalogo = {"tipo": fila["29_soporte_catalogo"]}
-
-        # Crear TiposServicio
-        tipos_servicio = [
-            "consulta",
-            "prestamo_externo",
-            "internet",
-            "leo",
-            "culturales",
-            "alfabetizacion",
-            "comunitarios",
-            "otros",
-        ]
-        nodos_tipos_servicio = [
-            {"nombre": ts} for ts in tipos_servicio if a_bool(fila[f"30_servicios_{ts}"])
-        ]
-
-        # Crear TiposActividad
-        tipos_actividad = [
-            "lectoescritura",
-            "culturales",
-            "formacion",
-            "emprendimientos",
-            "produccion_comunitaria",
-            "medioambientales",
-            "psicosociales",
-            "ciencia",
-            "otros",
-        ]
-        nodos_tipos_actividad = [
-            {"nombre": ta} for ta in tipos_actividad if a_bool(fila[f"31_actividades_{ta}"])
-        ]
-
-        # Crear nodo Tecnologia
-        tecnologia = {"conectividad": a_bool(fila["32_conectividad"])}
-
-        # Crear TiposTecnologia
-        tipos_tecnologia = [
-            "computadores",
-            "impresoras",
-            "tabletas",
-            "proyectores",
-            "smartphones",
-            "ninguno",
-            "otros",
-        ]
-        nodos_tipos_tecnologia = [
-            {"nombre": tt} for tt in tipos_tecnologia if a_bool(fila[f"33_tic_{tt}"])
-        ]
-
-        # Crear TiposPoblacion
-        tipos_poblacion = [
-            "infancias",
-            "jovenes",
-            "mujeres",
-            "adultos_mayores",
-            "migrantes",
-            "otros",
-        ]
-        nodos_tipos_poblacion = [
-            {"nombre": tp} for tp in tipos_poblacion if a_bool(fila[f"34_poblacion_{tp}"])
-        ]
-
-        # Crear TiposAliados
-        tipos_aliados = [
-            "editoriales",
-            "fundaciones",
-            "colectivos",
-            "casa_cultura",
-            "consejo_cultura",
-            "educativos",
-            "bibliotecas_comunitarias",
-            "otros",
-        ]
-        nodos_tipos_aliados = [
-            {"nombre": ta} for ta in tipos_aliados if a_bool(fila[f"35_aliados_{ta}"])
-        ]
-
-        # Crear TiposFinanciacion
-        tipos_financiacion = [
-            "autogestion",
-            "estimulos_distrito",
-            "becas",
-            "convocatorias_internacionales",
-            "patrocinios",
-            "otros",
-        ]
-        nodos_tipos_financiacion = [
-            {"nombre": tf}
-            for tf in tipos_financiacion
-            if a_bool(fila[f"36_fuentes_financiacion_{tf}"])
-        ]
-
-        return {
-            "biblioteca": biblioteca,
-            "ubicacion": ubicacion,
-            "localidad": localidad,
-            "redes_sociales": redes_sociales,
-            "coleccion": coleccion,
-            "tipos_coleccion": nodos_tipos_coleccion,
-            "catalogo": catalogo,
-            "soporte_catalogo": soporte_catalogo,
-            "tipos_servicio": nodos_tipos_servicio,
-            "tipos_actividad": nodos_tipos_actividad,
-            "tecnologia": tecnologia,
-            "tipos_tecnologia": nodos_tipos_tecnologia,
-            "tipos_poblacion": nodos_tipos_poblacion,
-            "tipos_aliados": nodos_tipos_aliados,
-            "tipos_financiacion": nodos_tipos_financiacion,
-        }
