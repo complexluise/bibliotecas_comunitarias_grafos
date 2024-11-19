@@ -48,7 +48,7 @@ class OperationalizationSource(DataSource):
             "nivel_interes_digitalizacion_koha",
             "nivel_impacto_adoptar_koha",
             "capacidad_tecnica_personal",
-            "sobrecarga_admin_catalogo"
+            "sobrecarga_admin_catalogo",
         ]
         df_encuestas = pd.read_csv(self.survey_path, header=0, names=col_names)
         bibliotecas_id = df_encuestas["BibliotecaID"].unique()

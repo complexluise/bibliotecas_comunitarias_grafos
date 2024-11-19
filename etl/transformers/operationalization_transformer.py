@@ -146,7 +146,7 @@ class OperationalizationTransformer(DataTransformer):
             "tipos_coleccion": TiposColeccionCoordinate(data_source.driver),
         }
 
-        results = pd.DataFrame({'BibliotecaID': data_source.bibliotecas_id})
+        results = pd.DataFrame({"BibliotecaID": data_source.bibliotecas_id})
         for key, enabled in self.coordinates_config.items():
             if enabled:
                 logger.debug(f"Processing coordinate: {key}")
@@ -156,9 +156,7 @@ class OperationalizationTransformer(DataTransformer):
                         data_source.bibliotecas_id
                     )
                     results = results.merge(
-                        coordinate_results,
-                        on='BibliotecaID',
-                        how='left'
+                        coordinate_results, on="BibliotecaID", how="left"
                     )
                     logger.info(f"Successfully processed coordinate: {key}")
                 except Exception as e:

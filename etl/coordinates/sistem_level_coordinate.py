@@ -107,9 +107,7 @@ class SistemaRegistroUsuariosCoordinate(AnalysisCoordinate):
             "Registro en hojas de cálculo.": 2,
             "Registro en software bibliográfico.": 3,
         }
-        data[self.column_name] = data[self.column_name].map(
-            registro_usuarios_scores
-        )
+        data[self.column_name] = data[self.column_name].map(registro_usuarios_scores)
         return data
 
 
@@ -164,7 +162,5 @@ class SistematizacionPrestamoExternoCoordinate(AnalysisCoordinate):
             "Registro hoja de cálculo.": 3,
             "Registro en software bibliográfico.": 4,
         }
-        data[self.column_name] = data[self.column_name].map(
-            prestamo_externo_scores
-        )
+        data[self.column_name] = data[self.column_name].map(prestamo_externo_scores)
         return data

@@ -27,7 +27,9 @@ class BibliotecaNeo4jDestination(Neo4jDestination):
 
         for field, relationship in relationships_map.items():
             if field in biblioteca_data:
-                non_null_props = {k: v for k, v in biblioteca_data[field].items() if v is not None}
+                non_null_props = {
+                    k: v for k, v in biblioteca_data[field].items() if v is not None
+                }
                 props_string = ", ".join([f"{k}: ${k}" for k in non_null_props.keys()])
                 tx.run(
                     f"""

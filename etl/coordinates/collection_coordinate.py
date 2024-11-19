@@ -160,9 +160,7 @@ class FrecuenciaActividadesMediacionCoordinate(AnalysisCoordinate):
             "La mayoría de las veces.": 2,
             "Siempre.": 3,
         }
-        data[self.column_name] = data[self.column_name].map(
-            frecuencia_scores
-        )
+        data[self.column_name] = data[self.column_name].map(frecuencia_scores)
         return data
 
 
