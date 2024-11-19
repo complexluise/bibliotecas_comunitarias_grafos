@@ -105,7 +105,7 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
             "Descripción del material": 1,
             "Sistemas de Clásificación (Incluye anteriores)": 2,
             "Identificadores como ISBN (Incluye anterior)": 3,
-            "Estado de disponibilidad de los materiales (Incluye anterior)": 4 ,
+            "Estado de disponibilidad de los materiales (Incluye anterior)": 4,
         }
         data[self.column_name] = data[self.column_name].map(detail_scores)
         return data

@@ -22,7 +22,9 @@ class DiversidadColeccionesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data[self.column_name] = data["tipos_coleccion"].apply(lambda x: len(x))  # TODO normalizar los valores
+        data[self.column_name] = data["tipos_coleccion"].apply(
+            lambda x: len(x)
+        )  # TODO normalizar los valores
         return data
 
 
@@ -49,11 +51,12 @@ class CantidadMaterialBibliograficoCoordinate(AnalysisCoordinate):
             "de 0 a 500 materiales": 0,
             "de 500 a 1000 materiales": 1,
             "de 1000 a 3000 materiales": 2,
-            "Más de 3000 materiales": 3
-
+            "Más de 3000 materiales": 3,
         }
 
-        data[self.column_name] = data["cantidad_inventario"].map(cantidad_inventario_scores)
+        data[self.column_name] = data["cantidad_inventario"].map(
+            cantidad_inventario_scores
+        )
         return data
 
 

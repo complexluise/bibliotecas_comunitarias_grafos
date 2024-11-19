@@ -23,8 +23,17 @@ class SistemasClasificacionCoordinate(AnalysisCoordinate):
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         data[self.column_name] = data[self.column_name].apply(
-            lambda x: 0 if not notnull(x) or "no usamos" in x.strip().lower()
-            else len([system for system in x.split(",") if "usamos" in system.strip().lower()])
+            lambda x: (
+                0
+                if not notnull(x) or "no usamos" in x.strip().lower()
+                else len(
+                    [
+                        system
+                        for system in x.split(",")
+                        if "usamos" in system.strip().lower()
+                    ]
+                )
+            )
         )
         return data
 
