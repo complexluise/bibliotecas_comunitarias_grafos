@@ -53,10 +53,10 @@ class EstadoDigitalizacionCatalogoCoordinate(AnalysisCoordinate):
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
         catalog_scores = {
-            "No tiene catálogo": 0,
-            "Catálogo analógico": 1,
-            "Catálogo en hoja de cálculo": 2,
-            "Software Bibliográfico": 3,
+            "No tiene catálogo.": 0,
+            "Catálogo analógico.": 1,
+            "Catálogo en hoja de cálculo.": 2,
+            "Software Bibliográfico.": 3,
         }
         data[self.column_name] = data[self.column_name].map(catalog_scores)
         return data
@@ -103,8 +103,9 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
         detail_scores = {
             "Sin información": 0,
             "Descripción del material": 1,
-            "Sistemas de Clasificación": 2,
-            "Estado de disponibilidad de los materiales": 3,
+            "Sistemas de Clásificación (Incluye anteriores)": 2,
+            "Identificadores como ISBN (Incluye anterior)": 3,
+            "Estado de disponibilidad de los materiales (Incluye anterior)": 4 ,
         }
         data[self.column_name] = data[self.column_name].map(detail_scores)
         return data
