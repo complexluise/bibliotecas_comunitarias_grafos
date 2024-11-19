@@ -1,6 +1,6 @@
 import pandas as pd
 
-from etl.core.base import DataTransformer
+from etl.core import DataTransformer
 from etl.sources.operationalization_source import OperationalizationDataSource
 from etl.coordinates.digital_level_coordinates import (
     InfraestructuraTecnologicaCoordinate,
@@ -33,6 +33,9 @@ from etl.coordinates.facilidad_adopcion_coordinate import (
     SobrecargaAdministrativaCoordinate,
     TiposColeccionCoordinate,
 )
+from etl.utils.utils import setup_logger
+
+logger = setup_logger("etl.log", "etl.transformers.operationalization")
 
 
 class OperationalizationTransformer(DataTransformer):
@@ -70,6 +73,7 @@ class OperationalizationTransformer(DataTransformer):
         }
 
     def transform(self, data_source: OperationalizationDataSource) -> pd.DataFrame:
+        logger.info("Starting operationalization transformation")
         coordinate_mappings = {
             # Nivel de avance en la digitalización del catálogo
             "infraestructura": InfraestructuraTecnologicaCoordinate(data_source.driver),
@@ -145,12 +149,19 @@ class OperationalizationTransformer(DataTransformer):
         results = pd.DataFrame()
         for key, enabled in self.coordinates_config.items():
             if enabled:
+                logger.debug(f"Processing coordinate: {key}")
                 coordinate = coordinate_mappings[key]
-                coordinate_results = coordinate.calculate_score(
-                    data_source.bibliotecas_id
-                )
-                coordinate_results["Categoría"] = coordinate.category
-                coordinate_results["Coordenada"] = coordinate.name
-                results = pd.concat([results, coordinate_results], ignore_index=True)
+                try:
+                    coordinate_results = coordinate.calculate_score(
+                        data_source.bibliotecas_id
+                    )
+                    coordinate_results["Categoría"] = coordinate.category
+                    coordinate_results["Coordenada"] = coordinate.name
+                    results = pd.concat([results, coordinate_results], ignore_index=True)
+                    logger.info(f"Successfully processed coordinate: {key}")
+                except Exception as e:
+                    logger.error(f"Error processing coordinate {key}: {str(e)}")
+                    raise
 
+            logger.info(f"Transformation completed. Generated {len(results)} results")
         return results
