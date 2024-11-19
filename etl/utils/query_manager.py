@@ -128,7 +128,7 @@ class Neo4JQueryManager:
     @staticmethod
     def infraestructura_tecnologica():
         return """MATCH (b:BibliotecaComunitaria)
-        OPTIONAL MATCH (b)-[r1:TIENE_TECNOLOGIA]->(t1:TipoTecnologia)
+        OPTIONAL MATCH (b)-[r1:TIENE_TECNOLOGIA]->(t1:Tipos_Tecnologia)
         OPTIONAL MATCH (b)-[r2:USA_TECNOLOGIA]->(t2:Tecnologia) 
         RETURN 
             b.id AS BibliotecaID, 
