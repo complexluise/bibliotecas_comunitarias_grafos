@@ -1,3 +1,5 @@
+import uuid
+
 from typing import List, Dict
 from neo4j import GraphDatabase
 from etl.core.base import DataDestination
@@ -44,11 +46,16 @@ class Neo4jDestination(DataDestination):
 
     @staticmethod
     def _create_node(tx, node_type: str, properties: Dict):
+        if not properties.get('id'):
+            properties['id'] = str(uuid.uuid4())[:8]
+
+        clean_properties = {k: v for k, v in properties.items() if v is not None or v != ""}
+
         query = f"""
         MERGE (n:{node_type} {{id: $properties.id}})
         SET n += $properties
         """
-        tx.run(query, properties=properties)
+        tx.run(query, properties=clean_properties)
 
     @staticmethod
     def _create_relationships(
