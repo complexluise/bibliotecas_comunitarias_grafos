@@ -11,6 +11,9 @@ class OperationalizationDataSource:
     bibliotecas_id: list
     driver: GraphDatabase.driver
 
+    def __len__(self) -> int:
+        return self.df_encuestas.shape[0]
+
 
 class OperationalizationSource(DataSource):
     def __init__(self, neo4j_config: Neo4JConfig, survey_path: str):
