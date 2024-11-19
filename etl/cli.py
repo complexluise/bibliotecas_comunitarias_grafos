@@ -32,15 +32,16 @@ def process_with_progress(func):
         func()
 
 
-def process_knowledge_graph(config: Neo4JConfig):
+def process_knowledge_graph(config: Neo4JConfig, input_libraries: str):
     """Processes and loads knowledge graph data into Neo4j.
 
     Args:
         config (Neo4JConfig): Configuration object for Neo4j connection.
+        input_libraries (str): Path to the CSV file containing library data.
     """
     pipeline = ETLPipeline(
         source=CSVDataSource(
-            "data/BASE DE DATOS DE BIBLIOTECAS COMUNITARIAS DE BOGOTÁ - SIBIBO 2024 - Base de datos.csv"
+            input_libraries
         ),
         transformer=BibliotecasTransformer(),
         destination=Neo4jDestination(config),
