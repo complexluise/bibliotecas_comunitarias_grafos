@@ -9,7 +9,7 @@ class BibliotecaNeo4jDestination(Neo4jDestination):
         # Create main biblioteca node
         tx.run(
             """
-            MERGE (b:BibliotecaComunitaria {id: $props.id})
+            CREATE (b:BibliotecaComunitaria {id: $props.id})
             SET b += $props
         """,
             props=biblioteca_data["biblioteca"],
@@ -27,15 +27,16 @@ class BibliotecaNeo4jDestination(Neo4jDestination):
 
         for field, relationship in relationships_map.items():
             if field in biblioteca_data:
+                non_null_props = {k: v for k, v in biblioteca_data[field].items() if v is not None}
+                props_string = ", ".join([f"{k}: ${k}" for k in non_null_props.keys()])
                 tx.run(
                     f"""
                     MATCH (b:BibliotecaComunitaria {{id: $biblioteca_id}})
-                    MERGE (n:{field.title()})
-                    SET n += $props
-                    MERGE (b)-[:{relationship}]->(n)
+                    MERGE (n:{field.title()} {{{props_string}}})
+                    CREATE (b)-[:{relationship}]->(n)
                 """,
                     biblioteca_id=biblioteca_data["biblioteca"]["id"],
-                    props=biblioteca_data[field],
+                    **non_null_props,
                 )
 
         # Handle list relationships
