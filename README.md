@@ -1,6 +1,6 @@
 # Mapeo de las Colecciones de las Bibliotecas Comunitarias de Bogotá
 
-![Bibliotecas Comunitarias](https://example.com/path/to/logo_or_image)
+<img alt="Bibliotecas Comunitarias" height="500" src="docs/bibliotecas.webp" width="500"/>
 
 Un proyecto de **mapeo de colecciones** que utiliza analítica de datos y un **grafo de conocimiento** para caracterizar las bibliotecas comunitarias de Bogotá, identificar sus fortalezas y necesidades, y priorizar la implementación de tecnologías como catálogos digitales.
 
