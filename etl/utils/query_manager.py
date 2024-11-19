@@ -22,8 +22,8 @@ class Neo4JQueryManager:
     @staticmethod
     def cantidad_inventario():
         return """
-        MATCH (b:BibliotecaComunitaria)
-        RETURN b.id AS BibliotecaID, b.cantidad_inventario AS cantidad_inventario
+        MATCH (b:BibliotecaComunitaria)-[r:TIENE_COLECCION]->(c:Coleccion)
+        RETURN b.id AS BibliotecaID, c.cantidad_inventario AS cantidad_inventario
         """
 
     @staticmethod
