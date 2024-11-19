@@ -30,7 +30,7 @@ class BibliotecaNeo4jDestination(Neo4jDestination):
                 tx.run(
                     f"""
                     MATCH (b:BibliotecaComunitaria {{id: $biblioteca_id}})
-                    MERGE (n:{field.title()} {{id: $props.id}})
+                    MERGE (n:{field.title()})
                     SET n += $props
                     MERGE (b)-[:{relationship}]->(n)
                 """,
