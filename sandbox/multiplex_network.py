@@ -14,6 +14,59 @@ class DistanceStrategy(ABC):
         pass
 
 
+class GowerDistance:
+    def __init__(self, categorical_columns):
+        self.categorical_columns = categorical_columns
+
+    def calculate(self, vector1, vector2, feature_ranges=None, weights=None):
+        """
+        Calculates the Gower Distance between two vectors.
+        feature_ranges: dict with the ranges (max-min) of numeric variables.
+        weights: dict with weights for each feature (default to 1 for all).
+        """
+        vector1 = np.array(vector1)
+        vector2 = np.array(vector2)
+        p = len(vector1)
+
+        # Default weights if not provided
+        if weights is None:
+            weights = np.ones(p)
+
+        # Identify categorical and numerical masks
+        categorical_mask = np.zeros(p, dtype=bool)
+        categorical_mask[list(self.categorical_columns)] = True
+        numerical_mask = ~categorical_mask
+
+        # Calculate similarities for categorical features
+        categorical_similarity = np.where(
+            categorical_mask,
+            (vector1 == vector2).astype(float),  # 1 if equal, 0 otherwise
+            0
+        )
+
+        # Calculate similarities for numerical features
+        numerical_ranges = np.array([feature_ranges[i] for i in range(p)])
+        numerical_similarity = np.where(
+            numerical_mask,
+            1 - np.abs(vector1 - vector2) / numerical_ranges,
+            0
+        )
+
+        # Combine similarities
+        similarities = categorical_similarity + numerical_similarity
+
+        # Apply weights
+        weighted_similarities = similarities * weights
+        weighted_sum = weights * (categorical_mask + numerical_mask)
+
+        # Calculate Gower similarity
+        gower_similarity = weighted_similarities.sum() / weighted_sum.sum()
+
+        # Convert similarity to distance
+        gower_distance = 1 - gower_similarity
+        return gower_distance
+
+
 class EuclidianDistance(DistanceStrategy):
     """Strategy for calculating distance between neighborhoods using Euclidean Distance.
 
