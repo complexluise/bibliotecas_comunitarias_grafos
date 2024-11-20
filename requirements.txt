@@ -5,3 +5,5 @@ matplotlib
 seaborn
 python-dotenv
 rich
+mpl-tools
+networkx
