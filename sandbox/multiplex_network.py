@@ -89,47 +89,94 @@ class EuclidianDistance(DistanceStrategy):
 
 
 class LayerFactory:
-    """Factory for building layers of the multiplex network.
+    """Fábrica para construir capas de la red múltiple.
 
-    Generates a layer where links between neighborhoods are based on a distance
-    metric and are created only if they meet the connection threshold.
+    Genera una capa donde los enlaces entre barrios se basan en una métrica
+    de distancia y se crean solo si cumplen con el umbral de conexión.
 
-    Attributes:
-        distance_strategy: Strategy object for calculating distances.
-        threshold (float): Maximum distance threshold for creating connections.
+    Atributos:
+        distance_strategy: Objeto de estrategia para calcular distancias.
+        threshold (float): Umbral máximo de distancia para crear conexiones.
+
+    Ejemplo:
+        >>> datos_barrios = pd.DataFrame({
+        ...     'barrio': ['A', 'B', 'C'],
+        ...     'poblacion': [1000, 2000, 1500],
+        ...     'ingreso': [50000, 60000, 55000]
+        ... })
+        >>> estrategia = GowerDistance([])
+        >>> fabrica = LayerFactory(estrategia)
+        >>> red = fabrica.create_layer(datos_barrios, ['poblacion', 'ingreso'], 'barrio')
     """
 
-    def __init__(self, distance_strategy, threshold):
+    def __init__(self, distance_strategy):
         self.distance_strategy = distance_strategy
-        self.threshold = threshold
+        self.similarity_matrix = None
+        self.network = None
+
+    def calculate_similarities(self, data, attributes):
+        n = len(data)
+        self.similarity_matrix = np.zeros((n, n))
+
+        # Calculate ranges for numeric variables
+        feature_ranges = {}
+        for i, col in enumerate(attributes):
+            if i not in self.distance_strategy.categorical_columns:
+                feature_ranges[i] = data[col].max() - data[col].min()
+                if feature_ranges[i] == 0:
+                    feature_ranges[i] = 1
+
+        # Calculate similarity matrix
+        for i in range(n):
+            for j in range(i + 1, n):
+                distance = self.distance_strategy.calculate(
+                    data.iloc[i][attributes].values,
+                    data.iloc[j][attributes].values,
+                    feature_ranges
+                )
+                similarity = 1 - distance
+                self.similarity_matrix[i, j] = similarity
+                self.similarity_matrix[j, i] = similarity
+
+        return self.similarity_matrix
+
+    def create_network(self, threshold, node_labels):
+        network = nx.Graph()
+        n = len(node_labels)
+
+        mask = self.similarity_matrix >= threshold
+        mask = np.triu(mask, k=1)
+
+        edges = np.column_stack(np.where(mask))
+        weights = self.similarity_matrix[mask]
+
+        for (i, j), weight in zip(edges, weights):
+            network.add_edge(node_labels[i], node_labels[j], weight=weight)
+
+        return network
+
+    def optimize_threshold(self, node_labels, threshold_range=np.arange(0.1, 1.0, 0.1)):
+        best_modularity = -1
+        best_threshold = None
+        best_network = None
+
+        for threshold in threshold_range:
+            G = self.create_network(threshold, node_labels)
+            if len(G.edges) > 0:
+                communities = list(nx.community.greedy_modularity_communities(G))
+                modularity = nx.community.modularity(G, communities)
+
+                if modularity > best_modularity:
+                    best_modularity = modularity
+                    best_threshold = threshold
+                    best_network = G
+
+        return best_network, best_threshold, best_modularity
 
     def create_layer(self, barrios_data: pd.DataFrame, attributes_list: list, node_column_name: str):
-        """Creates a network layer based on the specified attributes.
-
-        Args:
-            barrios_data (pd.DataFrame): DataFrame containing neighborhood data and attributes.
-            attributes_list (list): List of attribute column names to form the vector.
-            node_column_name (str): Name of the column containing neighborhood names.
-
-        Returns:
-            nx.Graph: Graph of the layer with weighted edges.
-        """
-        layer_graph = nx.Graph()
-
-        for i, barrio_i in barrios_data.iterrows():
-            for j, barrio_j in barrios_data.iterrows():
-                if i < j:
-                    vector1 = barrio_i[attributes_list].values
-                    vector2 = barrio_j[attributes_list].values
-                    distance = self.distance_strategy.calculate(vector1, vector2)
-
-                    if distance <= self.threshold:
-                        layer_graph.add_edge(
-                            barrio_i[node_column_name], barrio_j[node_column_name], weight=1 / (1 + distance)
-                        )
-
-        return layer_graph
-
+        similarity_matrix = self.calculate_similarities(barrios_data, attributes_list)
+        network, optimal_threshold, modularity = self.optimize_threshold(barrios_data[node_column_name].values)
+        return network
 
 class MultiplexNetwork:
     """Main class that manages the multiplex network and its layers.
