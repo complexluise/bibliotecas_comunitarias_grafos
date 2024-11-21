@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 
 from abc import ABC, abstractmethod
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 
 class SimilarityStrategy(ABC):
@@ -67,7 +67,7 @@ class SimilarityStrategy(ABC):
             feature_ranges[feature_ranges == 0] = 1  # Avoid division by zero
 
         num_data = df[num_cols].values
-        num_ranges = feature_ranges.values if isinstance(feature_ranges, pd.Series) else np.array(list(feature_ranges.values()))
+        num_ranges = feature_ranges.values if isinstance(feature_ranges, Series) else np.array(list(feature_ranges.values()))
 
         return num_data, num_ranges
 
@@ -96,8 +96,8 @@ class GowerSimilarity(SimilarityStrategy):
         df = GowerSimilarity.handle_missing_values(df, nan_strategy)
         num_cols, cat_cols = GowerSimilarity.identify_column_types(df)
         weights_array = GowerSimilarity.initialize_weights(df, weights)
-        num_data, num_ranges = GowerSimilarity.normalize_features(df, feature_ranges)
 
+        num_data, num_ranges = GowerSimilarity.normalize_features(df, feature_ranges)
         cat_data = df[cat_cols].astype(str).values if cat_cols else np.empty((len(df), 0))
 
         n = len(df)
@@ -115,7 +115,6 @@ class GowerSimilarity(SimilarityStrategy):
 
         all_sim = np.concatenate([num_sim, cat_sim], axis=2)
         weighted_sim = all_sim * weights_array
-
 
         return np.sum(weighted_sim, axis=2) / np.sum(weights_array)
 
@@ -141,37 +140,33 @@ class LayerFactory:
         >>> red = fabrica.create_layer(datos_barrios, ['poblacion', 'ingreso'], 'barrio')
     """
 
-    def __init__(self, similarity_strategy):
+    def __init__(self, similarity_strategy: SimilarityStrategy):
         self.similarity_strategy = similarity_strategy
-        self.similarity_matrix = None
         self.network = None
 
-    def calculate_similarities(self, data, attributes):
+    def calculate_similarities(self, data):
         """
         Calculate similarity matrix using the configured similarity strategy
 
         Args:
             data (DataFrame): Input data containing the attributes
-            attributes (list): List of column names to use for similarity calculation
 
         Returns:
             ndarray: Similarity matrix
         """
-        data_subset = data[attributes]
 
-        self.similarity_matrix = self.similarity_strategy.calculate(data_subset)
+        return self.similarity_strategy.calculate(data)
 
-        return self.similarity_matrix
-
-    def create_network(self, threshold, node_labels):
+    @staticmethod
+    def create_network(similarity_matrix, threshold, node_labels):
         network = nx.Graph()
         n = len(node_labels)
 
-        mask = self.similarity_matrix >= threshold
+        mask = similarity_matrix >= threshold
         mask = np.triu(mask, k=1)
 
         edges = np.column_stack(np.where(mask))
-        weights = self.similarity_matrix[mask]
+        weights = similarity_matrix[mask]
 
         for (i, j), weight in zip(edges, weights):
             network.add_edge(node_labels[i], node_labels[j], weight=weight)
@@ -197,8 +192,8 @@ class LayerFactory:
         return best_network, best_threshold, best_modularity
 
     def create_layer(self, master_table: DataFrame, attributes_list: list, node_column_name: str):
-        similarity_matrix = self.calculate_similarities(master_table, attributes_list)
-        network, optimal_threshold, modularity = self.optimize_threshold(master_table[node_column_name].values)
+        similarity_matrix = self.calculate_similarities(master_table)
+        network, optimal_threshold, modularity = self.optimize_threshold(similarity_matrix, master_table[node_column_name].values)
         return network
 
 class MultiplexNetwork:
@@ -214,7 +209,7 @@ class MultiplexNetwork:
 
     def __init__(self, master_table, node_column_name: list = []):
         self.master_table = master_table
-        self.node_column_name = node_column_name
+        self.column_name = node_column_name
         self.layers = {}
 
     def add_layer(self, layer_name: str, attributes_list: list, similarity_strategy, threshold):
@@ -224,9 +219,8 @@ class MultiplexNetwork:
             layer_name (str): Name of the layer.
             attributes_list (list): List of attribute column names to form the vector.
             similarity_strategy (SimilarityStrategy): Strategy for calculating similarity.
-            threshold (float): Connection threshold.
         """
-        layer_factory = LayerFactory(similarity_strategy, threshold)
+        layer_factory = LayerFactory(similarity_strategy)
         layer_graph = layer_factory.create_layer(self.master_table, attributes_list, self.node_column_name)
         self.layers[layer_name] = layer_graph
 
