@@ -173,9 +173,9 @@ class LayerFactory:
 
         return best_network, best_threshold, best_modularity
 
-    def create_layer(self, barrios_data: pd.DataFrame, attributes_list: list, node_column_name: str):
-        similarity_matrix = self.calculate_similarities(barrios_data, attributes_list)
-        network, optimal_threshold, modularity = self.optimize_threshold(barrios_data[node_column_name].values)
+    def create_layer(self, master_table: pd.DataFrame, attributes_list: list, node_column_name: str):
+        similarity_matrix = self.calculate_similarities(master_table, attributes_list)
+        network, optimal_threshold, modularity = self.optimize_threshold(master_table[node_column_name].values)
         return network
 
 class MultiplexNetwork:
@@ -185,12 +185,12 @@ class MultiplexNetwork:
     each representing different neighborhood attributes.
 
     Attributes:
-        barrios_data (pd.DataFrame): DataFrame containing neighborhood data.
+        master_table (pd.DataFrame): DataFrame containing neighborhood data.
         layers (dict): Dictionary storing the network layers.
     """
 
-    def __init__(self, barrios_data, node_column_name):
-        self.barrios_data = barrios_data
+    def __init__(self, master_table, node_column_name):
+        self.master_table = master_table
         self.node_column_name = node_column_name
         self.layers = {}
 
@@ -204,7 +204,7 @@ class MultiplexNetwork:
             threshold (float): Connection threshold.
         """
         layer_factory = LayerFactory(distance_strategy, threshold)
-        layer_graph = layer_factory.create_layer(self.barrios_data, attributes_list, self.node_column_name)
+        layer_graph = layer_factory.create_layer(self.master_table, attributes_list, self.node_column_name)
         self.layers[layer_name] = layer_graph
 
     def get_layer(self, attribute_column):
