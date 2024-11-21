@@ -29,44 +29,59 @@ class GowerSimilarity(SimilarityStrategy):
         ]
         return {col: data[col].max() - data[col].min() for col in numerical_columns}
 
-    def _calculate_row_similarity(self, row1, row2, feature_ranges, weights=None):
+    @staticmethod
+    def _calculate_row_similarity(df: DataFrame, feature_ranges=None, weights=None):
         """
-        Calcula la similaridad de Gower entre dos filas.
-        :param row1: Fila 1 como una Serie de pandas.
-        :param row2: Fila 2 como una Serie de pandas.
-        :param feature_ranges: Diccionario con los rangos de las variables numéricas.
-        :param weights: Diccionario de pesos para cada columna (opcional).
-        :return: Similaridad de Gower entre las dos filas.
+        Compute the Gower similarity matrix for the given DataFrame.
+        Automatically identifies numerical and categorical columns.
+        :param df: pandas DataFrame with data.
+        :param feature_ranges: Optional dict of ranges for numerical features, if not provided, they are calculated.
+        :param weights: Optional dict of weights for each feature, if not provided, all weights are 1.
+        :return: Gower similarity matrix as a NumPy array.
         """
-        categorical_mask = np.array([col in self.categorical_columns for col in row1.index])
-        values1 = row1.values
-        values2 = row2.values
+        # Identify numerical and categorical columns
+        num_cols = df.select_dtypes(include=[np.number]).columns
+        cat_cols = df.select_dtypes(exclude=[np.number]).columns
 
-        # Calculate similarities for categorical columns
-        cat_similarities = np.equal(values1[categorical_mask], values2[categorical_mask]).astype(float)
+        # Initialize weights
+        if weights:
+            weights_array = np.array([weights.get(col, 1) for col in df.columns])
+        else:
+            weights_array = np.ones(df.shape[1])
 
-        # Calculate similarities for numerical columns
-        num_mask = ~categorical_mask
-        ranges = np.array([feature_ranges.get(col, 0) for col in row1.index])[num_mask]
-        zero_range_mask = (ranges == 0)
+        # Compute feature ranges if not provided
+        if feature_ranges is None:
+            feature_ranges = df[num_cols].max() - df[num_cols].min()
+            feature_ranges[feature_ranges == 0] = 1  # Avoid division by zero
 
-        num_values1 = values1[num_mask]
-        num_values2 = values2[num_mask]
+        # Convert DataFrame to NumPy arrays
+        num_data = df[num_cols].values
+        cat_data = df[cat_cols].astype(str).values
+        num_ranges = feature_ranges.values
 
-        num_similarities = np.zeros(num_mask.sum())
-        num_similarities[zero_range_mask] = np.equal(num_values1[zero_range_mask], num_values2[zero_range_mask]).astype(float)
-        num_similarities[~zero_range_mask] = 1 - np.abs(num_values1[~zero_range_mask] - num_values2[~zero_range_mask]) / ranges[~zero_range_mask]
+        n = len(df)
+
+        # Compute numerical similarities
+        if num_cols.size > 0:
+            num_diff = np.abs(num_data[:, None, :] - num_data[None, :, :]) / num_ranges
+            num_sim = 1 - num_diff
+        else:
+            num_sim = np.zeros((n, n, 0))
+
+        # Compute categorical similarities
+        if cat_cols.size > 0:
+            cat_sim = (cat_data[:, None, :] == cat_data[None, :, :]).astype(float)
+        else:
+            cat_sim = np.zeros((n, n, 0))
 
         # Combine similarities
-        similarities = np.zeros(len(row1))
-        similarities[categorical_mask] = cat_similarities
-        similarities[num_mask] = num_similarities
+        all_sim = np.concatenate([num_sim, cat_sim], axis=2)
 
-        if weights:
-            weights_array = np.array([weights[col] for col in row1.index])
-            gower_similarity = np.sum(similarities * weights_array) / np.sum(weights_array)
-        else:
-            gower_similarity = np.mean(similarities)
+        # Apply weights
+        weighted_sim = all_sim * weights_array
+
+        # Compute Gower similarity
+        gower_similarity = np.sum(weighted_sim, axis=2) / np.sum(weights_array)
 
         return gower_similarity
 
