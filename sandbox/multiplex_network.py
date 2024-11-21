@@ -173,13 +173,13 @@ class LayerFactory:
 
         return network
 
-    def optimize_threshold(self, node_labels, threshold_range=np.arange(0.1, 1.0, 0.1)):
+    def optimize_threshold(self, similarity_matrix, node_labels, threshold_range=np.arange(0.1, 1.0, 0.1)):
         best_modularity = -1
         best_threshold = None
         best_network = None
 
         for threshold in threshold_range:
-            G = self.create_network(threshold, node_labels)
+            G = self.create_network(similarity_matrix, threshold, node_labels)
             if len(G.edges) > 0:
                 communities = list(nx.community.greedy_modularity_communities(G))
                 modularity = nx.community.modularity(G, communities)
@@ -191,9 +191,12 @@ class LayerFactory:
 
         return best_network, best_threshold, best_modularity
 
-    def create_layer(self, master_table: DataFrame, attributes_list: list, node_column_name: str):
-        similarity_matrix = self.calculate_similarities(master_table)
-        network, optimal_threshold, modularity = self.optimize_threshold(similarity_matrix, master_table[node_column_name].values)
+    def create_layer(self, master_table: DataFrame, nodes_name: list[str]):
+        similarity_matrix = self.calculate_similarities(data=master_table)
+        network, optimal_threshold, modularity = self.optimize_threshold(
+            similarity_matrix=similarity_matrix,
+            node_labels=nodes_name,
+        )
         return network
 
 class MultiplexNetwork:
@@ -207,21 +210,23 @@ class MultiplexNetwork:
         layers (dict): Dictionary storing the network layers.
     """
 
-    def __init__(self, master_table, node_column_name: list = []):
+    def __init__(self, master_table, nodes_name: list = []):
         self.master_table = master_table
-        self.column_name = node_column_name
+        self.nodes_name = nodes_name
         self.layers = {}
 
-    def add_layer(self, layer_name: str, attributes_list: list, similarity_strategy, threshold):
+    def add_layer(self, layer_name: str, similarity_strategy: SimilarityStrategy):
         """Adds a layer to the multiplex network for a list of attributes.
 
         Args:
             layer_name (str): Name of the layer.
-            attributes_list (list): List of attribute column names to form the vector.
             similarity_strategy (SimilarityStrategy): Strategy for calculating similarity.
         """
         layer_factory = LayerFactory(similarity_strategy)
-        layer_graph = layer_factory.create_layer(self.master_table, attributes_list, self.node_column_name)
+        layer_graph = layer_factory.create_layer(
+            master_table=self.master_table,
+            nodes_name=self.nodes_name
+        )
         self.layers[layer_name] = layer_graph
 
     def get_layer(self, attribute_column):
