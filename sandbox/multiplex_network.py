@@ -15,22 +15,10 @@ class SimilarityStrategy(ABC):
 
 
 class GowerSimilarity(SimilarityStrategy):
-    def __init__(self, categorical_columns: list = []):
-        self.categorical_columns = categorical_columns
-
-    def _get_feature_ranges(self, data):
-        """
-        Calcula los rangos (max - min) para las columnas numéricas.
-        :param data: DataFrame de entrada.
-        :return: Diccionario con los rangos de las columnas numéricas.
-        """
-        numerical_columns = [
-            col for col in data.columns if col not in self.categorical_columns
-        ]
-        return {col: data[col].max() - data[col].min() for col in numerical_columns}
+    """Implementation of Gower similarity calculation."""
 
     @staticmethod
-    def _calculate_row_similarity(df: DataFrame, feature_ranges=None, weights=None):
+    def calculate(df: DataFrame, feature_ranges=None, weights=None):
         """
         Compute the Gower similarity matrix for the given DataFrame.
         Automatically identifies numerical and categorical columns.
@@ -84,36 +72,6 @@ class GowerSimilarity(SimilarityStrategy):
         gower_similarity = np.sum(weighted_sim, axis=2) / np.sum(weights_array)
 
         return gower_similarity
-
-    def calculate(self, data, weights=None):
-        """
-        Calcula la matriz de distancias de Gower entre todas las filas del DataFrame.
-        :param data: DataFrame donde las filas son bibliotecas y las columnas son atributos.
-        :param weights: Diccionario de pesos opcional para cada columna.
-        :return: DataFrame con la matriz de distancias.
-        """
-        # Calcula los rangos de las columnas numéricas
-        feature_ranges = self._get_feature_ranges(data)
-
-        # Inicializa la matriz de distancias
-        n = data.shape[0]
-        similarity_matrix = np.zeros((n, n))
-
-        # Itera por todas las combinaciones de filas
-        for i in range(n):
-            for j in range(i, n):  # Solo calcula para j >= i para aprovechar la simetría
-                row1 = data.iloc[i]
-                row2 = data.iloc[j]
-                similarity = self._calculate_row_similarity(row1, row2, feature_ranges, weights)
-                similarity_matrix[i, j] = similarity
-                similarity_matrix[j, i] = similarity  # La matriz es simétrica
-
-        # Convierte la matriz en un DataFrame para facilidad de uso
-        similarity_df = DataFrame(
-            similarity_matrix, index=data.index, columns=data.index
-        )
-
-        return similarity_df
 
 
 class LayerFactory:
