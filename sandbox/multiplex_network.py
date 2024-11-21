@@ -305,24 +305,19 @@ class LayerFactory:
         self.similarity_strategy = similarity_strategy
         self.network = None
 
-    def calculate_similarities(self, data):
+    def calculate_similarities(self, data, **kwargs):
         """
         Calculate similarity matrix using the configured similarity strategy
 
         Args:
             data (DataFrame): Input data containing the attributes
+            **kwargs: Configuration parameters for similarity calculation
 
         Returns:
             ndarray: Similarity matrix
         """
 
-        return self.similarity_strategy.calculate(
-            df=data,
-            feature_ranges=None,
-            weights=None,
-            nan_strategy="ignore",
-            weighting_strategy='uniform'
-        )
+        return self.similarity_strategy.calculate(df=data, **kwargs)
 
     @staticmethod
     def create_network(similarity_matrix, threshold, node_labels):
@@ -358,8 +353,8 @@ class LayerFactory:
 
         return best_network, best_threshold, best_modularity
 
-    def create_layer(self, master_table: DataFrame, nodes_name: list[str]):
-        similarity_matrix = self.calculate_similarities(data=master_table)
+    def create_layer(self, master_table: DataFrame, nodes_name: list[str], **kwargs):
+        similarity_matrix = self.calculate_similarities(data=master_table, **kwargs)
         network, optimal_threshold, modularity = self.optimize_threshold(
             similarity_matrix=similarity_matrix,
             node_labels=nodes_name,
@@ -382,7 +377,7 @@ class MultiplexNetwork:
         self.nodes_name = nodes_name
         self.layers = {}
 
-    def add_layer(self, layer_name: str, similarity_strategy: SimilarityStrategy):
+    def add_layer(self, layer_name: str, similarity_strategy: SimilarityStrategy, **kwargs):
         """Adds a layer to the multiplex network for a list of attributes.
 
         Args:
@@ -392,7 +387,8 @@ class MultiplexNetwork:
         layer_factory = LayerFactory(similarity_strategy)
         layer_graph = layer_factory.create_layer(
             master_table=self.master_table,
-            nodes_name=self.nodes_name
+            nodes_name=self.nodes_name,
+            **kwargs
         )
         self.layers[layer_name] = layer_graph
 
