@@ -324,8 +324,12 @@ class LayerFactory:
         network = nx.Graph()
         n = len(node_labels)
 
-        mask = similarity_matrix >= threshold
-        mask = np.triu(mask, k=1)
+        if threshold is not None:
+            mask = similarity_matrix >= threshold
+            mask = np.triu(mask, k=1)
+        else:
+            # Include all edges without thresholding
+            mask = np.triu(np.ones_like(similarity_matrix, dtype=bool), k=1)
 
         edges = np.column_stack(np.where(mask))
         weights = similarity_matrix[mask]
@@ -353,12 +357,30 @@ class LayerFactory:
 
         return best_network, best_threshold, best_modularity
 
-    def create_layer(self, master_table: DataFrame, nodes_name: list[str], **kwargs):
+    def create_layer(self, master_table: DataFrame, nodes_name: list[str], threshold=None, optimize_threshold=False, **kwargs):
+        """
+        Create a network layer based on the similarity matrix and threshold.
+
+        Args:
+            master_table (DataFrame): The data containing node attributes.
+            nodes_name (list[str]): List of node labels.
+            threshold (float, optional): Threshold value for creating edges. Defaults to None.
+            optimize_threshold (bool, optional): Whether to optimize the threshold. Defaults to False.
+            **kwargs: Additional parameters for similarity calculation.
+
+        Returns:
+            networkx.Graph: The created network layer.
+        """
         similarity_matrix = self.calculate_similarities(data=master_table, **kwargs)
-        network, optimal_threshold, modularity = self.optimize_threshold(
-            similarity_matrix=similarity_matrix,
-            node_labels=nodes_name,
-        )
+
+        if optimize_threshold:
+            network, optimal_threshold, modularity = self.optimize_threshold(
+                similarity_matrix=similarity_matrix,
+                node_labels=nodes_name,
+            )
+            print(f"Optimized Threshold: {optimal_threshold}, Modularity: {modularity}")
+        else:
+            network = self.create_network(similarity_matrix, threshold, nodes_name)
         return network
 
 class MultiplexNetwork:
