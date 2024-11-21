@@ -1,9 +1,9 @@
 import numpy as np
-import pandas as pd
-from scipy.spatial.distance import euclidean
-import networkx as nx
-from abc import ABC, abstractmethod
 
+import networkx as nx
+
+from abc import ABC, abstractmethod
+from pandas import DataFrame
 
 class SimilarityStrategy(ABC):
     """Abstract base class for similarity calculation strategies."""
@@ -82,23 +82,23 @@ class GowerSimilarity(SimilarityStrategy):
 
         # Inicializa la matriz de distancias
         n = data.shape[0]
-        distance_matrix = np.zeros((n, n))
+        similarity_matrix = np.zeros((n, n))
 
         # Itera por todas las combinaciones de filas
         for i in range(n):
             for j in range(i, n):  # Solo calcula para j >= i para aprovechar la simetría
                 row1 = data.iloc[i]
                 row2 = data.iloc[j]
-                distance = self._calculate_row_distance(row1, row2, feature_ranges, weights)
-                distance_matrix[i, j] = distance
-                distance_matrix[j, i] = distance  # La matriz es simétrica
+                similarity = self._calculate_row_similarity(row1, row2, feature_ranges, weights)
+                similarity_matrix[i, j] = similarity
+                similarity_matrix[j, i] = similarity  # La matriz es simétrica
 
         # Convierte la matriz en un DataFrame para facilidad de uso
-        distance_df = pd.DataFrame(
-            distance_matrix, index=data.index, columns=data.index
+        similarity_df = DataFrame(
+            similarity_matrix, index=data.index, columns=data.index
         )
 
-        return distance_df
+        return similarity_df
 
 
 class LayerFactory:
@@ -108,11 +108,11 @@ class LayerFactory:
     de distancia y se crean solo si cumplen con el umbral de conexión.
 
     Atributos:
-        distance_strategy: Objeto de estrategia para calcular distancias.
+        similarity_strategy: Objeto de estrategia para calcular distancias.
         threshold (float): Umbral máximo de distancia para crear conexiones.
 
     Ejemplo:
-        >>> datos_barrios = pd.DataFrame({
+        >>> datos_barrios = DataFrame({
         ...     'barrio': ['A', 'B', 'C'],
         ...     'poblacion': [1000, 2000, 1500],
         ...     'ingreso': [50000, 60000, 55000]
@@ -122,8 +122,8 @@ class LayerFactory:
         >>> red = fabrica.create_layer(datos_barrios, ['poblacion', 'ingreso'], 'barrio')
     """
 
-    def __init__(self, distance_strategy):
-        self.distance_strategy = distance_strategy
+    def __init__(self, similarity_strategy):
+        self.similarity_strategy = similarity_strategy
         self.similarity_matrix = None
         self.network = None
 
@@ -134,7 +134,7 @@ class LayerFactory:
         # Calculate ranges for numeric variables
         feature_ranges = {}
         for i, col in enumerate(attributes):
-            if i not in self.distance_strategy.categorical_columns:
+            if i not in self.similarity_strategy.categorical_columns:
                 feature_ranges[i] = data[col].max() - data[col].min()
                 if feature_ranges[i] == 0:
                     feature_ranges[i] = 1
@@ -142,12 +142,12 @@ class LayerFactory:
         # Calculate similarity matrix
         for i in range(n):
             for j in range(i + 1, n):
-                distance = self.distance_strategy.calculate(
+                similarity = self.similarity_strategy.calculate(
                     data.iloc[i][attributes].values,
                     data.iloc[j][attributes].values,
                     feature_ranges
                 )
-                similarity = 1 - distance
+                similarity = 1 - similarity
                 self.similarity_matrix[i, j] = similarity
                 self.similarity_matrix[j, i] = similarity
 
@@ -186,7 +186,7 @@ class LayerFactory:
 
         return best_network, best_threshold, best_modularity
 
-    def create_layer(self, master_table: pd.DataFrame, attributes_list: list, node_column_name: str):
+    def create_layer(self, master_table: DataFrame, attributes_list: list, node_column_name: str):
         similarity_matrix = self.calculate_similarities(master_table, attributes_list)
         network, optimal_threshold, modularity = self.optimize_threshold(master_table[node_column_name].values)
         return network
@@ -198,7 +198,7 @@ class MultiplexNetwork:
     each representing different neighborhood attributes.
 
     Attributes:
-        master_table (pd.DataFrame): DataFrame containing neighborhood data.
+        master_table (DataFrame): DataFrame containing neighborhood data.
         layers (dict): Dictionary storing the network layers.
     """
 
@@ -213,7 +213,7 @@ class MultiplexNetwork:
         Args:
             layer_name (str): Name of the layer.
             attributes_list (list): List of attribute column names to form the vector.
-            similarity_strategy (SimilarityStrategy): Strategy for calculating distances.
+            similarity_strategy (SimilarityStrategy): Strategy for calculating similarity.
             threshold (float): Connection threshold.
         """
         layer_factory = LayerFactory(similarity_strategy, threshold)
