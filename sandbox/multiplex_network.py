@@ -6,14 +6,27 @@ from pandas import DataFrame, Series
 
 
 class SimilarityStrategy(ABC):
-    """Abstract base class for similarity calculation strategies."""
+    """Clase base abstracta para estrategias de cálculo de similitud.
+
+    Esta clase define la interfaz para implementar diferentes estrategias
+    de cálculo de similitud entre elementos.
+    """
 
     @staticmethod
     def identify_column_types(df: DataFrame):
-        """
-        Identifies numerical and categorical columns in the DataFrame.
-        :param df: pandas DataFrame with data.
-        :return: Tuple of numerical and categorical column names.
+        """Identifica los tipos de columnas numéricas y categóricas en el DataFrame.
+
+        Args:
+            df (DataFrame): DataFrame de pandas con los datos a analizar.
+
+        Returns:
+            tuple: Tupla con dos listas (columnas numéricas, columnas categóricas).
+
+        Ejemplo:
+            >>> df = pd.DataFrame({'num': [1,2,3], 'cat': ['a','b','c']})
+            >>> num_cols, cat_cols = identify_column_types(df)
+            >>> print(num_cols)  # ['num']
+            >>> print(cat_cols)  # ['cat']
         """
         num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         cat_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
@@ -21,11 +34,22 @@ class SimilarityStrategy(ABC):
 
     @staticmethod
     def handle_missing_values(df: DataFrame, nan_strategy="ignore"):
-        """
-        Handles missing values in the DataFrame based on the strategy.
-        :param df: pandas DataFrame with data.
-        :param nan_strategy: Strategy for handling NaNs: 'ignore', 'impute', 'drop', 'neutral'.
-        :return: Processed DataFrame.
+        """Maneja los valores faltantes en el DataFrame según la estrategia especificada.
+
+        Args:
+            df (DataFrame): DataFrame con los datos.
+            nan_strategy (str): Estrategia para manejar NaNs:
+                - 'ignore': Mantiene los valores NaN
+                - 'impute': Imputa con la media para numéricos y 'missing' para categóricos
+                - 'drop': Elimina columnas con NaN
+                - 'neutral': Reemplaza con 0 para numéricos y 'neutral' para categóricos
+
+        Returns:
+            DataFrame: DataFrame procesado según la estrategia elegida.
+
+        Ejemplo:
+            >>> df = pd.DataFrame({'A': [1, np.nan, 3], 'B': ['x', None, 'z']})
+            >>> df_processed = handle_missing_values(df, 'impute')
         """
         num_cols, cat_cols = SimilarityStrategy.identify_column_types(df)
 
@@ -69,16 +93,31 @@ class SimilarityStrategy(ABC):
 
 
 class GowerSimilarity(SimilarityStrategy):
-    """Implementation of Gower similarity calculation with various weighting strategies."""
+    """Implementación del cálculo de similitud de Gower con estrategias de ponderación.
+
+    Esta clase implementa el método de similitud de Gower que permite trabajar
+    con datos mixtos (numéricos y categóricos) y diferentes estrategias de
+    ponderación de características.
+
+    Métodos:
+        compute_entropy: Calcula la entropía de los datos
+        calculate: Calcula la matriz de similitud de Gower
+    """
 
     @staticmethod
     def compute_entropy(data, method='fd'):
-        """
-        Compute the entropy of the given data using histogram-based estimation with bias correction.
+        """Calcula la entropía de los datos usando estimación basada en histogramas.
 
-        :param data: 1D NumPy array of data values.
-        :param method: Method for bin width estimation ('fd' for Freedman-Diaconis).
-        :return: Bias-corrected entropy estimate.
+        Args:
+            data (array): Array de NumPy con los datos.
+            method (str): Método para estimar el ancho de los bins ('fd' para Freedman-Diaconis).
+
+        Returns:
+            float: Estimación de entropía corregida por sesgo.
+
+        Ejemplo:
+            >>> datos = np.array([1, 2, 2, 3, 3, 3, 4])
+            >>> entropia = compute_entropy(datos)
         """
         data = data[~np.isnan(data)]  # Remove NaNs
 
@@ -283,22 +322,15 @@ class GowerSimilarity(SimilarityStrategy):
 class LayerFactory:
     """Fábrica para construir capas de la red múltiple.
 
-    Genera una capa donde los enlaces entre barrios se basan en una métrica
-    de distancia y se crean solo si cumplen con el umbral de conexión.
+    Esta clase se encarga de crear las diferentes capas de la red basándose
+    en métricas de similitud entre nodos.
 
     Atributos:
-        similarity_strategy: Objeto de estrategia para calcular distancias.
-        threshold (float): Umbral máximo de distancia para crear conexiones.
+        similarity_strategy (SimilarityStrategy): Estrategia para calcular similitudes.
 
     Ejemplo:
-        >>> datos_barrios = DataFrame({
-        ...     'barrio': ['A', 'B', 'C'],
-        ...     'poblacion': [1000, 2000, 1500],
-        ...     'ingreso': [50000, 60000, 55000]
-        ... })
-        >>> estrategia = GowerSimilarity()
-        >>> fabrica = LayerFactory(estrategia)
-        >>> red = fabrica.create_layer(datos_barrios, ['poblacion', 'ingreso'], 'barrio')
+        >>> factory = LayerFactory(GowerSimilarity())
+        >>> layer = factory.create_layer(data, nodes=['A','B','C'], threshold=0.5)
     """
 
     def __init__(self, similarity_strategy: SimilarityStrategy):
@@ -384,14 +416,21 @@ class LayerFactory:
         return network
 
 class MultiplexNetwork:
-    """Main class that manages the multiplex network and its layers.
+    """Gestiona una red multicapa con diferentes tipos de relaciones.
 
-    This class handles the creation and management of multiple network layers,
-    each representing different neighborhood attributes.
+    Esta clase permite crear y gestionar una red donde los nodos pueden estar
+    conectados por diferentes tipos de relaciones, cada una representada en
+    una capa diferente.
 
-    Attributes:
-        master_table (DataFrame): DataFrame containing neighborhood data.
-        layers (dict): Dictionary storing the network layers.
+    Atributos:
+        master_table (DataFrame): Tabla con los datos de los nodos.
+        nodes_name (list): Lista de identificadores de nodos.
+        layers (dict): Diccionario con las capas de la red.
+
+    Ejemplo:
+        >>> data = pd.DataFrame({'id': ['A','B'], 'valor': [1,2]})
+        >>> red = MultiplexNetwork(data, nodes_name=['A','B'])
+        >>> red.add_layer('capa1', GowerSimilarity())
     """
 
     def __init__(self, master_table, nodes_name: list = []):
@@ -434,10 +473,26 @@ class MultiplexNetwork:
         return self.layers
 
 def compute_centralities(graph):
-    """Calculates centrality measures for each node in the graph."""
-    centrality_measures = {
+    """Calcula medidas de centralidad para cada nodo del grafo.
+
+    Calcula tres medidas de centralidad fundamentales:
+    - Grado: Número de conexiones directas
+    - Intermediación: Frecuencia con que un nodo está en los caminos más cortos
+    - Cercanía: Inverso de la distancia promedio a otros nodos
+
+    Args:
+        graph (nx.Graph): Grafo de NetworkX.
+
+    Returns:
+        dict: Diccionario con las medidas de centralidad por nodo.
+
+    Ejemplo:
+        >>> G = nx.Graph([(1,2), (2,3), (3,1)])
+        >>> centralidades = compute_centralities(G)
+        >>> print(centralidades['degree'][1])  # Centralidad de grado del nodo 1
+    """
+    return {
         "degree": nx.degree_centrality(graph),
         "betweenness": nx.betweenness_centrality(graph),
         "closeness": nx.closeness_centrality(graph)
     }
-    return centrality_measures
