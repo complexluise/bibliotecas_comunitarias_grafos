@@ -20,18 +20,6 @@ class SimilarityStrategy(ABC):
         return num_cols, cat_cols
 
     @staticmethod
-    def initialize_weights(df: DataFrame, weights=None):
-        """
-        Initializes weights for the DataFrame columns.
-        :param df: pandas DataFrame with data.
-        :param weights: Optional dictionary of weights for columns.
-        :return: NumPy array of weights.
-        """
-        if weights:
-            return np.array([weights.get(col, 1) for col in df.columns])
-        return np.ones(df.shape[1])
-
-    @staticmethod
     def handle_missing_values(df: DataFrame, nan_strategy="ignore"):
         """
         Handles missing values in the DataFrame based on the strategy.
@@ -79,11 +67,163 @@ class SimilarityStrategy(ABC):
         """
         pass
 
+
 class GowerSimilarity(SimilarityStrategy):
-    """Implementation of Gower similarity calculation."""
+    """Implementation of Gower similarity calculation with various weighting strategies."""
 
     @staticmethod
-    def calculate(df: DataFrame, feature_ranges=None, weights=None, nan_strategy="ignore"):
+    def compute_entropy(data, method='fd'):
+        """
+        Compute the entropy of the given data using histogram-based estimation with bias correction.
+
+        :param data: 1D NumPy array of data values.
+        :param method: Method for bin width estimation ('fd' for Freedman-Diaconis).
+        :return: Bias-corrected entropy estimate.
+        """
+        data = data[~np.isnan(data)]  # Remove NaNs
+
+        if len(data) == 0:
+            return 0.0
+
+        # Determine optimal number of bins using Freedman-Diaconis rule
+        if method == 'fd':
+            # Compute Interquartile Range (IQR)
+            q75, q25 = np.percentile(data, [75, 25])
+            iqr = q75 - q25
+            bin_width = 2 * iqr / (len(data) ** (1 / 3))
+            if bin_width > 0:
+                n_bins = int(np.ceil((np.max(data) - np.min(data)) / bin_width))
+            else:
+                n_bins = int(np.sqrt(len(data)))  # Fallback to sqrt rule
+        else:
+            raise ValueError(f"Unknown method: {method}")
+
+        if n_bins <= 0:
+            n_bins = 1  # At least one bin
+
+        # Compute histogram
+        counts, _ = np.histogram(data, bins=n_bins) # compare with np.histogram(data, bins='fd')
+
+        # Calculate probabilities
+        probabilities = counts / counts.sum()
+
+        # Remove zero probabilities to avoid log(0)
+        probabilities = probabilities[probabilities > 0]
+
+        # Calculate raw entropy (in nats)
+        entropy = -np.sum(probabilities * np.log(probabilities))
+
+        # Apply Miller-Madow bias correction
+        n_nonempty_bins = len(probabilities)
+        correction = (n_nonempty_bins - 1) / (2 * len(data))
+        entropy_corrected = entropy + correction
+
+        return entropy_corrected
+
+    @staticmethod
+    def compute_column_entropies(df: DataFrame):
+        """
+        Compute the entropy of each column in the DataFrame.
+        For numerical columns, use histogram-based estimation with bias correction.
+        For categorical columns, use category counts.
+
+        :param df: pandas DataFrame with data.
+        :return: Dictionary of entropies per column.
+        """
+        entropies = {}
+        num_cols, cat_cols = SimilarityStrategy.identify_column_types(df)
+
+        # Numerical columns
+        for col in num_cols:
+            data = df[col].values
+            entropy_corrected = GowerSimilarity.compute_entropy(data)
+            entropies[col] = entropy_corrected
+
+        # Categorical columns
+        for col in cat_cols:
+            data = df[col].astype(str).values
+            # Get counts of unique categories
+            unique, counts = np.unique(data, return_counts=True)
+            probabilities = counts / counts.sum()
+            # Calculate entropy
+            entropy = -np.sum(probabilities * np.log(probabilities))
+            # Apply Miller-Madow bias correction
+            n_nonempty_bins = len(probabilities)
+            correction = (n_nonempty_bins - 1) / (2 * len(data))
+            entropy_corrected = entropy + correction
+            entropies[col] = entropy_corrected
+
+        return entropies
+
+    @staticmethod
+    def compute_similarity_entropies(all_sim):
+        """
+        Compute the entropy over the per-feature similarity distributions.
+
+        :param all_sim: 3D NumPy array of per-feature similarities (n x n x num_features).
+        :return: Array of entropies for each feature.
+        """
+        num_features = all_sim.shape[2]
+        entropies = np.zeros(num_features)
+        for i in range(num_features):
+            # Get the similarity values for this feature, flatten the matrix
+            sim_values = all_sim[:, :, i].flatten()
+            entropy_corrected = GowerSimilarity.compute_entropy(sim_values)
+            entropies[i] = entropy_corrected
+        return entropies
+
+    @staticmethod
+    def initialize_weights(df: DataFrame, weights=None, weighting_strategy='uniform', all_sim=None):
+        """
+        Initializes weights for the DataFrame columns based on the specified strategy.
+        :param df: pandas DataFrame with data.
+        :param weights: Optional dictionary of weights for columns.
+        :param weighting_strategy: Strategy for weighting features.
+        :param all_sim: Optional 3D NumPy array of per-feature similarities (required for some strategies).
+        :return: NumPy array of weights.
+        """
+        if weights:
+            return np.array([weights.get(col, 1) for col in df.columns])
+
+        num_features = df.shape[1]
+
+        if weighting_strategy == 'uniform':
+            return np.ones(num_features)
+        elif weighting_strategy == 'feature_entropy':
+            # Compute entropies of features
+            entropies = GowerSimilarity.compute_column_entropies(df)
+            entropy_weights = np.array([entropies.get(col, 0) for col in df.columns])
+            return entropy_weights
+        elif weighting_strategy in ['similarity_entropy', 'inverse_similarity_entropy', 'similarity_entropy_normalized', 'inverse_similarity_entropy_normalized']:
+            # Compute entropies over similarity layers
+            if all_sim is None:
+                raise ValueError("all_sim must be provided when using similarity entropy-based weighting strategies.")
+            entropies = GowerSimilarity.compute_similarity_entropies(all_sim)
+            if weighting_strategy == 'similarity_entropy':
+                return entropies
+            elif weighting_strategy == 'inverse_similarity_entropy':
+                # Avoid division by zero
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    inv_entropies = np.where(entropies != 0, 1 / entropies, 0)
+                return inv_entropies
+            elif weighting_strategy == 'similarity_entropy_normalized':
+                total_entropy = np.sum(entropies)
+                if total_entropy == 0:
+                    return np.ones_like(entropies) / sum(entropies)
+                return entropies / total_entropy
+            elif weighting_strategy == 'inverse_similarity_entropy_normalized':
+                # Avoid division by zero
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    inv_entropies = np.where(entropies != 0, 1 / entropies, 0)
+                total_inverse_entropy = np.sum(inv_entropies)
+                if total_inverse_entropy == 0:
+                    return np.ones_like(inv_entropies) / sum(inv_entropies)
+                return inv_entropies / total_inverse_entropy
+        else:
+            raise ValueError(f"Unknown weighting strategy: {weighting_strategy}")
+
+    @staticmethod
+    def calculate(df: DataFrame, feature_ranges=None, weights=None, nan_strategy="ignore", weighting_strategy='uniform'):
         """
         Compute the Gower similarity matrix for the given DataFrame.
         Automatically identifies numerical and categorical columns.
@@ -91,32 +231,53 @@ class GowerSimilarity(SimilarityStrategy):
         :param feature_ranges: Optional dict of ranges for numerical features.
         :param weights: Optional dict of weights for each feature.
         :param nan_strategy: Strategy for handling NaNs: 'ignore', 'impute', 'drop', 'neutral'.
+        :param weighting_strategy: Strategy for weighting features.
         :return: Gower similarity matrix as a NumPy array.
         """
         df = GowerSimilarity.handle_missing_values(df, nan_strategy)
         num_cols, cat_cols = GowerSimilarity.identify_column_types(df)
-        weights_array = GowerSimilarity.initialize_weights(df, weights)
 
         num_data, num_ranges = GowerSimilarity.normalize_features(df, feature_ranges)
-        cat_data = df[cat_cols].astype(str).values if cat_cols else np.empty((len(df), 0))
+        cat_data = df[cat_cols].astype(str).values if cat_cols else np.empty((len(df), 0), dtype=str)
 
         n = len(df)
 
+        # Compute numerical similarities
         if num_cols:
             num_diff = np.abs(num_data[:, None, :] - num_data[None, :, :]) / num_ranges
             num_sim = 1 - num_diff
         else:
             num_sim = np.zeros((n, n, 0))
 
+        # Compute categorical similarities
         if cat_cols:
             cat_sim = (cat_data[:, None, :] == cat_data[None, :, :]).astype(float)
         else:
             cat_sim = np.zeros((n, n, 0))
 
+        # Concatenate numerical and categorical similarities
         all_sim = np.concatenate([num_sim, cat_sim], axis=2)
+
+        # Compute weights based on the selected strategy
+        weights_array = GowerSimilarity.initialize_weights(df, weights, weighting_strategy, all_sim=all_sim)
+
+        # Ensure weights_array is the same length as the number of features
+        if weights_array.shape[0] != all_sim.shape[2]:
+            raise ValueError("Length of weights_array does not match number of features.")
+
+        # Apply weights to similarities
         weighted_sim = all_sim * weights_array
 
-        return np.sum(weighted_sim, axis=2) / np.sum(weights_array)
+        # Compute the total weight (sum of weights)
+        total_weight = np.sum(weights_array)
+
+        # Handle case where total weight is zero
+        if total_weight == 0:
+            return np.zeros((n, n))
+        else:
+            # Sum over features and normalize by total weight
+            return np.sum(weighted_sim, axis=2) / total_weight
+
 
 
 class LayerFactory:
@@ -155,7 +316,13 @@ class LayerFactory:
             ndarray: Similarity matrix
         """
 
-        return self.similarity_strategy.calculate(data)
+        return self.similarity_strategy.calculate(
+            df=data,
+            feature_ranges=None,
+            weights=None,
+            nan_strategy="ignore",
+            weighting_strategy='uniform'
+        )
 
     @staticmethod
     def create_network(similarity_matrix, threshold, node_labels):
