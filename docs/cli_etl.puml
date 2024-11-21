@@ -1,0 +1,30 @@
+@startuml
+!theme crt-green
+participant CLI
+participant ETLPipeline
+participant ETLObserver
+participant OperationalizationSource
+participant OperationalizationTransformer
+participant CSVDestination
+
+CLI -> ETLPipeline: create pipeline
+CLI -> ETLObserver: create observer
+CLI -> ETLPipeline: add_observer(observer)
+CLI -> ETLPipeline: execute()
+
+activate ETLPipeline
+ETLPipeline -> OperationalizationSource: extract()
+OperationalizationSource --> ETLPipeline: raw_data
+ETLPipeline -> ETLObserver: notify("Extracted records")
+
+ETLPipeline -> OperationalizationTransformer: transform(raw_data)
+OperationalizationTransformer --> ETLPipeline: transformed_data
+ETLPipeline -> ETLObserver: notify("Transformed records")
+
+ETLPipeline -> CSVDestination: load(transformed_data)
+CSVDestination --> ETLPipeline: void
+ETLPipeline -> ETLObserver: notify("ETL completed")
+deactivate ETLPipeline
+
+ETLPipeline --> CLI: execution complete
+@enduml
