@@ -5,87 +5,100 @@ import networkx as nx
 from abc import ABC, abstractmethod
 
 
-class DistanceStrategy(ABC):
-    """Abstract base class for distance calculation strategies."""
+class SimilarityStrategy(ABC):
+    """Abstract base class for similarity calculation strategies."""
 
     @abstractmethod
-    def calculate(self, vector1, vector2):
-        """Abstract method for calculating distance between two vectors."""
+    def calculate(self, *args, **kwargs):
+        """Abstract method for calculating similarity between two vectors."""
         pass
 
 
-class GowerDistance:
-    def __init__(self, categorical_columns):
+class GowerSimilarity(SimilarityStrategy):
+    def __init__(self, categorical_columns: list = []):
         self.categorical_columns = categorical_columns
 
-    def calculate(self, vector1, vector2, feature_ranges=None, weights=None):
+    def _get_feature_ranges(self, data):
         """
-        Calculates the Gower Distance between two vectors.
-        feature_ranges: dict with the ranges (max-min) of numeric variables.
-        weights: dict with weights for each feature (default to 1 for all).
+        Calcula los rangos (max - min) para las columnas numéricas.
+        :param data: DataFrame de entrada.
+        :return: Diccionario con los rangos de las columnas numéricas.
         """
-        vector1 = np.array(vector1)
-        vector2 = np.array(vector2)
-        p = len(vector1)
+        numerical_columns = [
+            col for col in data.columns if col not in self.categorical_columns
+        ]
+        return {col: data[col].max() - data[col].min() for col in numerical_columns}
 
-        # Default weights if not provided
-        if weights is None:
-            weights = np.ones(p)
+    def _calculate_row_similarity(self, row1, row2, feature_ranges, weights=None):
+        """
+        Calcula la similaridad de Gower entre dos filas.
+        :param row1: Fila 1 como una Serie de pandas.
+        :param row2: Fila 2 como una Serie de pandas.
+        :param feature_ranges: Diccionario con los rangos de las variables numéricas.
+        :param weights: Diccionario de pesos para cada columna (opcional).
+        :return: Similaridad de Gower entre las dos filas.
+        """
+        categorical_mask = np.array([col in self.categorical_columns for col in row1.index])
+        values1 = row1.values
+        values2 = row2.values
 
-        # Identify categorical and numerical masks
-        categorical_mask = np.zeros(p, dtype=bool)
-        categorical_mask[list(self.categorical_columns)] = True
-        numerical_mask = ~categorical_mask
+        # Calculate similarities for categorical columns
+        cat_similarities = np.equal(values1[categorical_mask], values2[categorical_mask]).astype(float)
 
-        # Calculate similarities for categorical features
-        categorical_similarity = np.where(
-            categorical_mask,
-            (vector1 == vector2).astype(float),  # 1 if equal, 0 otherwise
-            0
-        )
+        # Calculate similarities for numerical columns
+        num_mask = ~categorical_mask
+        ranges = np.array([feature_ranges.get(col, 0) for col in row1.index])[num_mask]
+        zero_range_mask = (ranges == 0)
 
-        # Calculate similarities for numerical features
-        numerical_ranges = np.array([feature_ranges[i] for i in range(p)])
-        numerical_similarity = np.where(
-            numerical_mask,
-            1 - np.abs(vector1 - vector2) / numerical_ranges,
-            0
-        )
+        num_values1 = values1[num_mask]
+        num_values2 = values2[num_mask]
+
+        num_similarities = np.zeros(num_mask.sum())
+        num_similarities[zero_range_mask] = np.equal(num_values1[zero_range_mask], num_values2[zero_range_mask]).astype(float)
+        num_similarities[~zero_range_mask] = 1 - np.abs(num_values1[~zero_range_mask] - num_values2[~zero_range_mask]) / ranges[~zero_range_mask]
 
         # Combine similarities
-        similarities = categorical_similarity + numerical_similarity
+        similarities = np.zeros(len(row1))
+        similarities[categorical_mask] = cat_similarities
+        similarities[num_mask] = num_similarities
 
-        # Apply weights
-        weighted_similarities = similarities * weights
-        weighted_sum = weights * (categorical_mask + numerical_mask)
+        if weights:
+            weights_array = np.array([weights[col] for col in row1.index])
+            gower_similarity = np.sum(similarities * weights_array) / np.sum(weights_array)
+        else:
+            gower_similarity = np.mean(similarities)
 
-        # Calculate Gower similarity
-        gower_similarity = weighted_similarities.sum() / weighted_sum.sum()
+        return gower_similarity
 
-        # Convert similarity to distance
-        gower_distance = 1 - gower_similarity
-        return gower_distance
-
-
-class EuclidianDistance(DistanceStrategy):
-    """Strategy for calculating distance between neighborhoods using Euclidean Distance.
-
-    This class implements a static method to compute distances between vectors
-    representing neighborhood attributes.
-    """
-
-    @staticmethod
-    def calculate(vector1, vector2):
-        """Calculates the Euclidean distance between two vectors.
-
-        Args:
-            vector1 (array-like): First vector of attributes.
-            vector2 (array-like): Second vector of attributes.
-
-        Returns:
-            float: The Euclidean distance between the vectors.
+    def calculate(self, data, weights=None):
         """
-        return euclidean(vector1, vector2)
+        Calcula la matriz de distancias de Gower entre todas las filas del DataFrame.
+        :param data: DataFrame donde las filas son bibliotecas y las columnas son atributos.
+        :param weights: Diccionario de pesos opcional para cada columna.
+        :return: DataFrame con la matriz de distancias.
+        """
+        # Calcula los rangos de las columnas numéricas
+        feature_ranges = self._get_feature_ranges(data)
+
+        # Inicializa la matriz de distancias
+        n = data.shape[0]
+        distance_matrix = np.zeros((n, n))
+
+        # Itera por todas las combinaciones de filas
+        for i in range(n):
+            for j in range(i, n):  # Solo calcula para j >= i para aprovechar la simetría
+                row1 = data.iloc[i]
+                row2 = data.iloc[j]
+                distance = self._calculate_row_distance(row1, row2, feature_ranges, weights)
+                distance_matrix[i, j] = distance
+                distance_matrix[j, i] = distance  # La matriz es simétrica
+
+        # Convierte la matriz en un DataFrame para facilidad de uso
+        distance_df = pd.DataFrame(
+            distance_matrix, index=data.index, columns=data.index
+        )
+
+        return distance_df
 
 
 class LayerFactory:
@@ -104,7 +117,7 @@ class LayerFactory:
         ...     'poblacion': [1000, 2000, 1500],
         ...     'ingreso': [50000, 60000, 55000]
         ... })
-        >>> estrategia = GowerDistance([])
+        >>> estrategia = GowerSimilarity()
         >>> fabrica = LayerFactory(estrategia)
         >>> red = fabrica.create_layer(datos_barrios, ['poblacion', 'ingreso'], 'barrio')
     """
@@ -194,16 +207,16 @@ class MultiplexNetwork:
         self.node_column_name = node_column_name
         self.layers = {}
 
-    def add_layer(self, layer_name, attributes_list, distance_strategy, threshold):
+    def add_layer(self, layer_name: str, attributes_list: list, similarity_strategy, threshold):
         """Adds a layer to the multiplex network for a list of attributes.
 
         Args:
             layer_name (str): Name of the layer.
             attributes_list (list): List of attribute column names to form the vector.
-            distance_strategy (DistanceStrategy): Strategy for calculating distances.
+            similarity_strategy (SimilarityStrategy): Strategy for calculating distances.
             threshold (float): Connection threshold.
         """
-        layer_factory = LayerFactory(distance_strategy, threshold)
+        layer_factory = LayerFactory(similarity_strategy, threshold)
         layer_graph = layer_factory.create_layer(self.master_table, attributes_list, self.node_column_name)
         self.layers[layer_name] = layer_graph
 
