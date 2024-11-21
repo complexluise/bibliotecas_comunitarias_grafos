@@ -1,77 +1,123 @@
 import numpy as np
-
 import networkx as nx
 
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 
+
 class SimilarityStrategy(ABC):
     """Abstract base class for similarity calculation strategies."""
 
+    @staticmethod
+    def identify_column_types(df: DataFrame):
+        """
+        Identifies numerical and categorical columns in the DataFrame.
+        :param df: pandas DataFrame with data.
+        :return: Tuple of numerical and categorical column names.
+        """
+        num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        cat_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
+        return num_cols, cat_cols
+
+    @staticmethod
+    def initialize_weights(df: DataFrame, weights=None):
+        """
+        Initializes weights for the DataFrame columns.
+        :param df: pandas DataFrame with data.
+        :param weights: Optional dictionary of weights for columns.
+        :return: NumPy array of weights.
+        """
+        if weights:
+            return np.array([weights.get(col, 1) for col in df.columns])
+        return np.ones(df.shape[1])
+
+    @staticmethod
+    def handle_missing_values(df: DataFrame, nan_strategy="ignore"):
+        """
+        Handles missing values in the DataFrame based on the strategy.
+        :param df: pandas DataFrame with data.
+        :param nan_strategy: Strategy for handling NaNs: 'ignore', 'impute', 'drop', 'neutral'.
+        :return: Processed DataFrame.
+        """
+        num_cols, cat_cols = SimilarityStrategy.identify_column_types(df)
+
+        if nan_strategy == "impute":
+            df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
+            df[cat_cols] = df[cat_cols].fillna("missing")
+        elif nan_strategy == "drop":
+            df = df.dropna(axis=1, how='any')
+        elif nan_strategy == "neutral":
+            df[num_cols] = np.nan_to_num(df[num_cols], nan=0)
+            df[cat_cols] = df[cat_cols].fillna("neutral")
+
+        return df
+
+    @staticmethod
+    def normalize_features(df: DataFrame, feature_ranges=None):
+        """
+        Normalizes numerical features based on their ranges.
+        :param df: pandas DataFrame with data.
+        :param feature_ranges: Optional dictionary of feature ranges.
+        :return: NumPy array of normalized features and feature ranges.
+        """
+        num_cols, _ = SimilarityStrategy.identify_column_types(df)
+
+        if feature_ranges is None:
+            feature_ranges = df[num_cols].max() - df[num_cols].min()
+            feature_ranges[feature_ranges == 0] = 1  # Avoid division by zero
+
+        num_data = df[num_cols].values
+        num_ranges = feature_ranges.values if isinstance(feature_ranges, pd.Series) else np.array(list(feature_ranges.values()))
+
+        return num_data, num_ranges
+
     @abstractmethod
     def calculate(self, *args, **kwargs):
-        """Abstract method for calculating similarity between two vectors."""
+        """
+        Abstract method for calculating similarity.
+        Must be implemented in subclasses.
+        """
         pass
-
 
 class GowerSimilarity(SimilarityStrategy):
     """Implementation of Gower similarity calculation."""
 
     @staticmethod
-    def calculate(df: DataFrame, feature_ranges=None, weights=None):
+    def calculate(df: DataFrame, feature_ranges=None, weights=None, nan_strategy="ignore"):
         """
         Compute the Gower similarity matrix for the given DataFrame.
         Automatically identifies numerical and categorical columns.
         :param df: pandas DataFrame with data.
-        :param feature_ranges: Optional dict of ranges for numerical features, if not provided, they are calculated.
-        :param weights: Optional dict of weights for each feature, if not provided, all weights are 1.
+        :param feature_ranges: Optional dict of ranges for numerical features.
+        :param weights: Optional dict of weights for each feature.
+        :param nan_strategy: Strategy for handling NaNs: 'ignore', 'impute', 'drop', 'neutral'.
         :return: Gower similarity matrix as a NumPy array.
         """
-        # Identify numerical and categorical columns
-        num_cols = df.select_dtypes(include=[np.number]).columns
-        cat_cols = df.select_dtypes(exclude=[np.number]).columns
+        df = GowerSimilarity.handle_missing_values(df, nan_strategy)
+        num_cols, cat_cols = GowerSimilarity.identify_column_types(df)
+        weights_array = GowerSimilarity.initialize_weights(df, weights)
+        num_data, num_ranges = GowerSimilarity.normalize_features(df, feature_ranges)
 
-        # Initialize weights
-        if weights:
-            weights_array = np.array([weights.get(col, 1) for col in df.columns])
-        else:
-            weights_array = np.ones(df.shape[1])
-
-        # Compute feature ranges if not provided
-        if feature_ranges is None:
-            feature_ranges = df[num_cols].max() - df[num_cols].min()
-            feature_ranges[feature_ranges == 0] = 1  # Avoid division by zero
-
-        # Convert DataFrame to NumPy arrays
-        num_data = df[num_cols].values
-        cat_data = df[cat_cols].astype(str).values
-        num_ranges = feature_ranges.values
+        cat_data = df[cat_cols].astype(str).values if cat_cols else np.empty((len(df), 0))
 
         n = len(df)
 
-        # Compute numerical similarities
-        if num_cols.size > 0:
+        if num_cols:
             num_diff = np.abs(num_data[:, None, :] - num_data[None, :, :]) / num_ranges
             num_sim = 1 - num_diff
         else:
             num_sim = np.zeros((n, n, 0))
 
-        # Compute categorical similarities
-        if cat_cols.size > 0:
+        if cat_cols:
             cat_sim = (cat_data[:, None, :] == cat_data[None, :, :]).astype(float)
         else:
             cat_sim = np.zeros((n, n, 0))
 
-        # Combine similarities
         all_sim = np.concatenate([num_sim, cat_sim], axis=2)
-
-        # Apply weights
         weighted_sim = all_sim * weights_array
 
-        # Compute Gower similarity
-        gower_similarity = np.sum(weighted_sim, axis=2) / np.sum(weights_array)
 
-        return gower_similarity
+        return np.sum(weighted_sim, axis=2) / np.sum(weights_array)
 
 
 class LayerFactory:
@@ -101,28 +147,19 @@ class LayerFactory:
         self.network = None
 
     def calculate_similarities(self, data, attributes):
-        n = len(data)
-        self.similarity_matrix = np.zeros((n, n))
+        """
+        Calculate similarity matrix using the configured similarity strategy
 
-        # Calculate ranges for numeric variables
-        feature_ranges = {}
-        for i, col in enumerate(attributes):
-            if i not in self.similarity_strategy.categorical_columns:
-                feature_ranges[i] = data[col].max() - data[col].min()
-                if feature_ranges[i] == 0:
-                    feature_ranges[i] = 1
+        Args:
+            data (DataFrame): Input data containing the attributes
+            attributes (list): List of column names to use for similarity calculation
 
-        # Calculate similarity matrix
-        for i in range(n):
-            for j in range(i + 1, n):
-                similarity = self.similarity_strategy.calculate(
-                    data.iloc[i][attributes].values,
-                    data.iloc[j][attributes].values,
-                    feature_ranges
-                )
-                similarity = 1 - similarity
-                self.similarity_matrix[i, j] = similarity
-                self.similarity_matrix[j, i] = similarity
+        Returns:
+            ndarray: Similarity matrix
+        """
+        data_subset = data[attributes]
+
+        self.similarity_matrix = self.similarity_strategy.calculate(data_subset)
 
         return self.similarity_matrix
 
@@ -175,7 +212,7 @@ class MultiplexNetwork:
         layers (dict): Dictionary storing the network layers.
     """
 
-    def __init__(self, master_table, node_column_name):
+    def __init__(self, master_table, node_column_name: list = []):
         self.master_table = master_table
         self.node_column_name = node_column_name
         self.layers = {}
