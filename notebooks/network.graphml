@@ -1,0 +1,431 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="edge" attr.name="weight" attr.type="float" />
+  <graph edgedefault="undirected">
+    <node id="Biblioteca Comunitaria Casa Viva" />
+    <node id="Biblioteca Comunitaria La BibloCleta" />
+    <node id="Biblioteca Comunitaria La Montaña Mágica" />
+    <node id="Biblioteca Comunitaria Taller Comunitario Lucio Lara" />
+    <node id="Biblioteca Comunitaria de Imágenes" />
+    <node id="Biblioteca Comunitaria Manuela Beltrán" />
+    <node id="Biblioteca Comunitaria Raíz de Barro" />
+    <node id="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" />
+    <node id="Biblioteca Comunitaria Babilonia" />
+    <node id="Biblioteca Comunitaria Ojos Café (Itinerante)" />
+    <node id="Biblioteca Comunitaria Lxs Abandonadxs" />
+    <node id="Biblioteca Comunitaria ALTAMIRA PEPASO" />
+    <node id="Biblioteca Comunitaria Casa de las luciérnagas" />
+    <node id="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo" />
+    <node id="Biblioteca Comunitaria Itinerante SUASIE" />
+    <node id="Biblioteca popular Alberto Gutierrez Botero" />
+    <node id="Biblioteca Comunitaria Heredando saberes" />
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria La BibloCleta">
+      <data key="d0">0.5147057478162113</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria La Montaña Mágica">
+      <data key="d0">0.49784667827538126</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Taller Comunitario Lucio Lara">
+      <data key="d0">0.587770845563776</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria de Imágenes">
+      <data key="d0">0.40428591696281985</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Manuela Beltrán">
+      <data key="d0">0.5284546619581273</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.615977645487332</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.7725133146885363</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.7253646503289336</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.48909699184111205</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.5750695867813507</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.6720337903641632</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.6097776577364908</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.8307471319265777</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5905954255733066</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.6777015905920215</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa Viva" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6781445749697126</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria La Montaña Mágica">
+      <data key="d0">0.360955223621652</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Taller Comunitario Lucio Lara">
+      <data key="d0">0.5918553232686298</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria de Imágenes">
+      <data key="d0">0.7995318420908432</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Manuela Beltrán">
+      <data key="d0">0.6608622116087945</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.7626272914207899</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.564942349135766</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.598891223835117</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.7727830184367626</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6363300785939299</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.602328904047795</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.4762778608285731</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.4848876100974092</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.6782297784776088</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.5822125209521262</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La BibloCleta" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.5960758149232176</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Taller Comunitario Lucio Lara">
+      <data key="d0">0.722630901087852</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria de Imágenes">
+      <data key="d0">0.5015616851038635</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Manuela Beltrán">
+      <data key="d0">0.5240739728897645</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.4905214559876584</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.5779878375365836</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.5742147203945921</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.4995202474015589</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6571158374855258</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.6915592064820303</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.7016957501769902</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.506135569507577</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5509660584637837</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.5095830158500192</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria La Montaña Mágica" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6797572849319726</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria de Imágenes">
+      <data key="d0">0.7324617847508411</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Manuela Beltrán">
+      <data key="d0">0.6087635807699472</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.7090576819045094</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.6806263503190503</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.6641388876829868</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.5842098552817414</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.8880159371325036</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.6861076721197307</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.706383444598629</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.5735566342819064</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.6307509969682398</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.6122215286324859</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Taller Comunitario Lucio Lara" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6583379366977643</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Manuela Beltrán">
+      <data key="d0">0.5876453645685452</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.6541848119320092</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.5139757934400978</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.5463324142389697</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.6467441519589804</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.741727336862874</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.5291120570075457</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.6168843223107846</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.4062217578454147</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.7125011394812171</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.5351027165677241</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria de Imágenes" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.5086076618679062</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Raíz de Barro">
+      <data key="d0">0.7742866064279684</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.6223514430112818</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.6757954508490368</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.802052994090476</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6283624263164508</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.7602891962506622</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.6174052496575464</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.6199413722438674</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5317711115620397</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.5660153166703882</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Manuela Beltrán" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.7738076256575668</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA">
+      <data key="d0">0.6922616103162208</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.6781963106117795</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.7248547244331702</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6611472199088166</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.6857766089125765</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.5345696365535334</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.6052268734349647</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5420528026403403</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.6111977365150735</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Raíz de Barro" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6952489037273296</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Babilonia">
+      <data key="d0">0.8330136674444798</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.5696607548790045</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6522252039692298</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.7555830954753787</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.718238648064514</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.7656275085650671</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.667870202208658</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.8641144470271911</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria CENTRO CULTURAL SIKUWAYRA" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.7665923508111216</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Ojos Café (Itinerante)">
+      <data key="d0">0.5908952840842835</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6895544919594842</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.7856199254839746</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.7167239585681415</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.7923800360642487</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.7433425266811282</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.7886421225547208</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Babilonia" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.8166830630573051</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria Lxs Abandonadxs">
+      <data key="d0">0.6286846106070415</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.7123141104258293</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.5662327394385672</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.5043403223526918</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5659175459846937</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.48236650415344573</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Ojos Café (Itinerante)" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.699423390694987</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca Comunitaria ALTAMIRA PEPASO">
+      <data key="d0">0.671951863895136</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.74940365048176</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.5417962244506782</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.6825735036546876</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.5500943047675189</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Lxs Abandonadxs" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6867390830475849</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria ALTAMIRA PEPASO" target="Biblioteca Comunitaria Casa de las luciérnagas">
+      <data key="d0">0.7168822483505454</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria ALTAMIRA PEPASO" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.7459076844256376</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria ALTAMIRA PEPASO" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.6967072674868544</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria ALTAMIRA PEPASO" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.684410320658333</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria ALTAMIRA PEPASO" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.8826600489721416</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa de las luciérnagas" target="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo">
+      <data key="d0">0.6293263148433512</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa de las luciérnagas" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.6775402469277374</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa de las luciérnagas" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.62491004966612</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Casa de las luciérnagas" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.7528438566540699</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo" target="Biblioteca Comunitaria Itinerante SUASIE">
+      <data key="d0">0.5919803190305406</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.7335206882725548</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Biblioteca Alberto Lleras Camargo" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.7099589721093924</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Itinerante SUASIE" target="Biblioteca popular Alberto Gutierrez Botero">
+      <data key="d0">0.6801948245329674</data>
+    </edge>
+    <edge source="Biblioteca Comunitaria Itinerante SUASIE" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.7017057296193095</data>
+    </edge>
+    <edge source="Biblioteca popular Alberto Gutierrez Botero" target="Biblioteca Comunitaria Heredando saberes">
+      <data key="d0">0.6767261762066576</data>
+    </edge>
+  </graph>
+</graphml>
