@@ -1,6 +1,7 @@
 from etl.coordinates.base import AnalysisCoordinate
 from etl.utils.constants import AnalysisCategory
 from etl.utils.query_manager import Neo4JQueryManager
+from etl.utils.utils import one_hot_encode_categories, normalize_and_clean_nominal_categories
 from pandas import DataFrame, notnull
 
 
@@ -9,7 +10,7 @@ class DiversidadColeccionesCoordinate(AnalysisCoordinate):
         super().__init__(
             driver,
             name="Diversidad de Colecciones",
-            column_name="diversidad_colecciones",
+            column_name="tipos_coleccion",
             description="Tipos de colección disponibles en la biblioteca",
         )
         self.category = AnalysisCategory.COLECCION_CARACTERIZACION.value
@@ -22,9 +23,6 @@ class DiversidadColeccionesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data[self.column_name] = data["tipos_coleccion"].apply(
-            lambda x: len(x)
-        )  # TODO normalizar los valores
         return data
 
 
@@ -104,12 +102,7 @@ class EnfoquesColeccionesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data["num_enfoques"] = data[self.column_name].apply(
-            lambda x: len(x.split(",")) if notnull(x) else 0
-        )
-        data[self.column_name] = data["num_enfoques"].apply(
-            lambda x: 3 if x == 1 else (2 if x <= 3 else 1)
-        )
+        data[self.column_name] = normalize_and_clean_nominal_categories(data[self.column_name])
         return data
 
 
@@ -130,9 +123,7 @@ class ActividadesMediacionColeccionCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data[self.column_name] = data[self.column_name].apply(
-            lambda x: 1 if notnull(x) and x.strip() != "" else 0
-        )
+        data[self.column_name] = normalize_and_clean_nominal_categories(data[self.column_name])
         return data
 
 
@@ -180,7 +171,5 @@ class ColeccionesEspecialesCoordinate(AnalysisCoordinate):
     def calculate_score(self, bibliotecas: list[str]) -> DataFrame:
         data = self.get_data()
         data = data[data["BibliotecaID"].isin(bibliotecas)]
-        data[self.column_name] = data[self.column_name].apply(
-            lambda x: 1 if x.strip().lower() == "sí" else 0
-        )
+        data[self.column_name] = normalize_and_clean_nominal_categories(data[self.column_name])
         return data

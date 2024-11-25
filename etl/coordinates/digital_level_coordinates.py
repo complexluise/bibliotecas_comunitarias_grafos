@@ -103,9 +103,9 @@ class NivelInformacionCatalogoCoordinate(AnalysisCoordinate):
         detail_scores = {
             "Sin información": 0,
             "Descripción del material": 1,
-            "Sistemas de Clásificación (Incluye anteriores)": 2,
-            "Identificadores como ISBN (Incluye anterior)": 3,
-            "Estado de disponibilidad de los materiales (Incluye anterior)": 4,
+            "Sistemas de Clasificación": 2,
+            "Identificadores como ISBN": 3,
+            "Estado de disponibilidad de los materiales": 4,
         }
         data[self.column_name] = data[self.column_name].map(detail_scores)
         return data

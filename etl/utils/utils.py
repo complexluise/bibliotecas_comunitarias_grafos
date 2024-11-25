@@ -1,6 +1,7 @@
 import logging
 from csv import DictReader
 from datetime import datetime
+from pandas import get_dummies, concat
 
 
 def setup_logger(log_filename: str, logger_name: str = None) -> logging.Logger:
@@ -75,3 +76,42 @@ def a_int(valor):
         return int(valor)
     except ValueError:
         return None
+
+
+def one_hot_encode_categories(df, column_name):
+    """
+    Realiza One-Hot Encoding de una columna que contiene listas de categorías.
+
+    Args:
+    df (pd.DataFrame): DataFrame que contiene la columna a procesar.
+    column_name (str): Nombre de la columna que contiene las listas de categorías.
+
+    Returns:
+    pd.DataFrame: DataFrame con las columnas adicionales correspondientes al One-Hot Encoding.
+    """
+    # Generar el One-Hot Encoding usando pandas.get_dummies
+    categories = get_dummies(df[column_name].explode()).groupby(level=0).sum()
+    return concat([df.drop(columns=[column_name]), categories], axis=1)
+
+def normalize_and_clean_nominal_categories(column):
+    """
+    Normaliza y limpia las variables categoricas nominales en una columna:
+    - Convierte todo a minúsculas.
+    - Reemplaza espacios por guiones bajos.
+    - Remueve puntos y caracteres innecesarios.
+    - Limpia espacios o guiones adicionales al inicio o final de las palabras.
+    - Convierte en una lista de términos.
+
+    Args:
+    column (pd.Series): Columna con las variables categoricas nominales a normalizar.
+
+    Returns:
+    pd.Series: Columna normalizada con las variables categoricas nominales .
+    """
+    return (
+        column.str.lower()
+        .str.replace(r"[^\w\s,]", "", regex=True)
+        .str.replace(" ", "_")
+        .str.split(",")
+        .apply(lambda lst: [term.strip("_") for term in lst])
+    )
