@@ -87,21 +87,25 @@ class BibliotecasTransformer(DataTransformer):
     Handles the specific transformation logic for library data before loading into Neo4j.
     """
 
-    def transform(self, data: List[Dict]) -> List[Dict]:
+    def transform(self, data: List[Dict], drop_missing_data: bool =False) -> List[Dict]:
         """
         Transforms raw library data into Neo4j compatible format.
 
         Args:
             data (List[Dict]): Raw data from the source
+            drop_missing_data (bool): if True drop rows with missing values
 
         Returns:
             List[Dict]: Transformed data ready for Neo4j import
+
         """
         transformed_data = []
         data = data[1:]  # Skip the header row
 
+        if drop_missing_data:
+            data = [biblioteca for biblioteca in data if not biblioteca["23_inventario"] == '']
+
         for row in data:
-            # TODO drop rows with missing values
 
             try:
                 if self.validate_data(row):
