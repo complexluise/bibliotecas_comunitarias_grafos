@@ -61,7 +61,7 @@ class NivelDetalleOrganizacionColeccionCoordinate(AnalysisCoordinate):
             "Organización por categorías temáticas generales.": 2,
             "Secciones etiquetadas y señalizadas por temas.": 3,
             "Clasificación con códigos simples en cada libro.": 4,
-            "Sistema detallado de clasificación y catálogo completo.": 5,
+            "Sistema detallado de clasificación.": 5,
         }
         data[self.column_name] = data[self.column_name].map(nivel_orden_scores)
         return data
