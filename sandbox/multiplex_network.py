@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 
 from abc import ABC, abstractmethod
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, isnull
 
 
 class SimilarityStrategy(ABC):
@@ -14,23 +14,32 @@ class SimilarityStrategy(ABC):
 
     @staticmethod
     def identify_column_types(df: DataFrame):
-        """Identifica los tipos de columnas numéricas y categóricas en el DataFrame.
+        """Identifica los tipos de columnas numéricas, categóricas y multi-etiqueta en el DataFrame.
 
         Args:
             df (DataFrame): DataFrame de pandas con los datos a analizar.
 
         Returns:
-            tuple: Tupla con dos listas (columnas numéricas, columnas categóricas).
+            tuple: Tupla con tres listas (columnas numéricas, columnas categóricas, columnas multi-etiqueta).
 
         Ejemplo:
-            >>> df = pd.DataFrame({'num': [1,2,3], 'cat': ['a','b','c']})
-            >>> num_cols, cat_cols = identify_column_types(df)
+            >>> df = pd.DataFrame({'num': [1,2,3], 'cat': ['a','b','c'], 'multi': [['x', 'y'], ['y'], ['x']]})
+            >>> num_cols, cat_cols, multi_label_cols = identify_column_types(df)
             >>> print(num_cols)  # ['num']
             >>> print(cat_cols)  # ['cat']
+            >>> print(multi_label_cols)  # ['multi']
         """
         num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-        cat_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
-        return num_cols, cat_cols
+        other_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
+        multi_label_cols = []
+        cat_cols = []
+        for col in other_cols:
+            first_non_null = df[col].dropna().iloc[0] if not df[col].dropna().empty else None
+            if isinstance(first_non_null, list):
+                multi_label_cols.append(col)
+            else:
+                cat_cols.append(col)
+        return num_cols, cat_cols, multi_label_cols
 
     @staticmethod
     def handle_missing_values(df: DataFrame, nan_strategy="ignore"):
@@ -51,16 +60,18 @@ class SimilarityStrategy(ABC):
             >>> df = pd.DataFrame({'A': [1, np.nan, 3], 'B': ['x', None, 'z']})
             >>> df_processed = handle_missing_values(df, 'impute')
         """
-        num_cols, cat_cols = SimilarityStrategy.identify_column_types(df)
+        num_cols, cat_cols, multi_label_cols = SimilarityStrategy.identify_column_types(df)
 
         if nan_strategy == "impute":
             df[num_cols] = df[num_cols].fillna(df[num_cols].mean())
             df[cat_cols] = df[cat_cols].fillna("missing")
+            df[multi_label_cols] = df[multi_label_cols].applymap(lambda x: x if isinstance(x, list) else [])
         elif nan_strategy == "drop":
             df = df.dropna(axis=1, how='any')
         elif nan_strategy == "neutral":
             df[num_cols] = np.nan_to_num(df[num_cols], nan=0)
             df[cat_cols] = df[cat_cols].fillna("neutral")
+            df[multi_label_cols] = df[multi_label_cols].applymap(lambda x: x if isinstance(x, list) else [])
 
         return df
 
@@ -72,7 +83,7 @@ class SimilarityStrategy(ABC):
         :param feature_ranges: Optional dictionary of feature ranges.
         :return: NumPy array of normalized features and feature ranges.
         """
-        num_cols, _ = SimilarityStrategy.identify_column_types(df)
+        num_cols, _, _ = SimilarityStrategy.identify_column_types(df)
 
         if feature_ranges is None:
             feature_ranges = df[num_cols].max() - df[num_cols].min()
@@ -96,7 +107,7 @@ class GowerSimilarity(SimilarityStrategy):
     """Implementación del cálculo de similitud de Gower con estrategias de ponderación.
 
     Esta clase implementa el método de similitud de Gower que permite trabajar
-    con datos mixtos (numéricos y categóricos) y diferentes estrategias de
+    con datos mixtos (numéricos, categóricos y multi-etiqueta) y diferentes estrategias de
     ponderación de características.
 
     Métodos:
@@ -141,7 +152,7 @@ class GowerSimilarity(SimilarityStrategy):
             n_bins = 1  # At least one bin
 
         # Compute histogram
-        counts, _ = np.histogram(data, bins=n_bins) # compare with np.histogram(data, bins='fd')
+        counts, _ = np.histogram(data, bins=n_bins)
 
         # Calculate probabilities
         probabilities = counts / counts.sum()
@@ -170,7 +181,7 @@ class GowerSimilarity(SimilarityStrategy):
         :return: Dictionary of entropies per column.
         """
         entropies = {}
-        num_cols, cat_cols = SimilarityStrategy.identify_column_types(df)
+        num_cols, cat_cols, multi_label_cols = GowerSimilarity.identify_column_types(df)
 
         # Numerical columns
         for col in num_cols:
@@ -178,7 +189,7 @@ class GowerSimilarity(SimilarityStrategy):
             entropy_corrected = GowerSimilarity.compute_entropy(data)
             entropies[col] = entropy_corrected
 
-        # Categorical columns
+        # Single-label categorical columns
         for col in cat_cols:
             data = df[col].astype(str).values
             # Get counts of unique categories
@@ -189,6 +200,29 @@ class GowerSimilarity(SimilarityStrategy):
             # Apply Miller-Madow bias correction
             n_nonempty_bins = len(probabilities)
             correction = (n_nonempty_bins - 1) / (2 * len(data))
+            entropy_corrected = entropy + correction
+            entropies[col] = entropy_corrected
+
+        # Multi-label categorical columns
+        for col in multi_label_cols:
+            all_labels = set()
+            for labels in df[col].dropna():
+                all_labels.update(labels)
+            all_labels = sorted(all_labels)
+            label_counts = {label: 0 for label in all_labels}
+            total_count = 0
+            for labels in df[col]:
+                if isnull(labels):
+                    continue
+                for label in labels:
+                    label_counts[label] += 1
+                    total_count += 1
+            probabilities = np.array(list(label_counts.values())) / total_count
+            # Calculate entropy
+            entropy = -np.sum(probabilities * np.log(probabilities))
+            # Apply Miller-Madow bias correction
+            n_nonempty_bins = len(probabilities)
+            correction = (n_nonempty_bins - 1) / (2 * total_count)
             entropy_corrected = entropy + correction
             entropies[col] = entropy_corrected
 
@@ -265,7 +299,7 @@ class GowerSimilarity(SimilarityStrategy):
     def calculate(df: DataFrame, feature_ranges=None, weights=None, nan_strategy="ignore", weighting_strategy='uniform'):
         """
         Compute the Gower similarity matrix for the given DataFrame.
-        Automatically identifies numerical and categorical columns.
+        Automatically identifies numerical, categorical, and multi-label categorical columns.
         :param df: pandas DataFrame with data.
         :param feature_ranges: Optional dict of ranges for numerical features.
         :param weights: Optional dict of weights for each feature.
@@ -274,12 +308,45 @@ class GowerSimilarity(SimilarityStrategy):
         :return: Gower similarity matrix as a NumPy array.
         """
         df = GowerSimilarity.handle_missing_values(df, nan_strategy)
-        num_cols, cat_cols = GowerSimilarity.identify_column_types(df)
-
-        num_data, num_ranges = GowerSimilarity.normalize_features(df, feature_ranges)
-        cat_data = df[cat_cols].astype(str).values if cat_cols else np.empty((len(df), 0), dtype=str)
+        num_cols, cat_cols, multi_label_cols = GowerSimilarity.identify_column_types(df)
 
         n = len(df)
+
+        # Process numerical data
+        num_data, num_ranges = GowerSimilarity.normalize_features(df[num_cols], feature_ranges)
+
+        # Process single-label categorical data
+        if cat_cols:
+            cat_data = df[cat_cols].astype(str).values
+            # Compute categorical similarities
+            cat_sim = (cat_data[:, None, :] == cat_data[None, :, :]).astype(float)
+        else:
+            cat_sim = np.zeros((n, n, 0))
+
+        # Process multi-label categorical data
+        ml_similarity_matrices = []
+        for col in multi_label_cols:
+            # Get all unique labels
+            all_labels = set()
+            for labels in df[col].dropna():
+                all_labels.update(labels)
+            all_labels = sorted(all_labels)
+            label_to_index = {label: idx for idx, label in enumerate(all_labels)}
+            num_labels = len(all_labels)
+            ml_binary_matrix = np.zeros((len(df), num_labels), dtype=int)
+            for i, labels in enumerate(df[col]):
+                if isnull(labels):
+                    continue  # Or handle missing values appropriately
+                for label in labels:
+                    idx = label_to_index[label]
+                    ml_binary_matrix[i, idx] = 1
+            # Compute cosine similarity
+            norms = np.linalg.norm(ml_binary_matrix, axis=1)
+            norms[norms == 0] = 1  # Avoid division by zero
+            normalized_matrix = ml_binary_matrix / norms[:, np.newaxis]
+            sim_matrix = normalized_matrix @ normalized_matrix.T
+            # Add a new axis to stack later
+            ml_similarity_matrices.append(sim_matrix[..., np.newaxis])
 
         # Compute numerical similarities
         if num_cols:
@@ -288,17 +355,13 @@ class GowerSimilarity(SimilarityStrategy):
         else:
             num_sim = np.zeros((n, n, 0))
 
-        # Compute categorical similarities
-        if cat_cols:
-            cat_sim = (cat_data[:, None, :] == cat_data[None, :, :]).astype(float)
-        else:
-            cat_sim = np.zeros((n, n, 0))
+        # Concatenate all similarities
+        similarity_layers = [num_sim, cat_sim] + ml_similarity_matrices
+        all_sim = np.concatenate(similarity_layers, axis=2)
 
-        # Concatenate numerical and categorical similarities
-        all_sim = np.concatenate([num_sim, cat_sim], axis=2)
-
-        # Compute weights based on the selected strategy
-        weights_array = GowerSimilarity.initialize_weights(df, weights, weighting_strategy, all_sim=all_sim)
+        # Initialize weights
+        columns = num_cols + cat_cols + multi_label_cols
+        weights_array = GowerSimilarity.initialize_weights(df[columns], weights, weighting_strategy, all_sim=all_sim)
 
         # Ensure weights_array is the same length as the number of features
         if weights_array.shape[0] != all_sim.shape[2]:
@@ -316,6 +379,7 @@ class GowerSimilarity(SimilarityStrategy):
         else:
             # Sum over features and normalize by total weight
             return np.sum(weighted_sim, axis=2) / total_weight
+
 
 
 
